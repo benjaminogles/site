@@ -4,12 +4,12 @@
 # The Discrete Fourier Transform From Scratch
 # ===========================================
 #
-# In this post I show how to derive the one-dimensional, complex discrete Fourier transform (DFT) from first principles.
+# In this post I show how to derive the formula for the one-dimensional, complex discrete Fourier transform (DFT).
 #
 # Motivating Example
 # ------------------
 #
-# We are given a data file, procured by intercepting and digitizing wireless morse code transmissions.
+# Suppose we are given a data file, procured by intercepting and digitizing wireless morse code transmissions.
 # The data file contains complex samples, meaning we can compute the amplitude and phase of the intercepted signal at each sample.
 # Our task is to extract and decode each morse code message.
 #
@@ -91,8 +91,8 @@ def next_power_of_2(n):
 # lit unskip
 # lit text
 #
-# There are sections of the data file where it is clear that only one transmitter was active.
-# If I plot the amplitude of each sample in such a section, we can clearly see that it carries the morse code message from the active transmitter.
+# There are sections of the recorded data where it is clear that only one transmitter was active.
+# If we plot the amplitude of each sample in a section like this, we can clearly see that it carries the morse code message from the active transmitter.
 #
 # lit skip
 
@@ -107,13 +107,13 @@ plt.close()
 # lit unskip
 # lit text
 #
-# The _dits_ and _dahs_ of morse code are represented by sequences of samples with amplitude `1` while the _spaces_ are represented by sequences of samples with amplitude `0`.
+# The _dits_ and _dahs_ of morse code are represented by sequences of samples with amplitude non-zero amplitude while the _spaces_ are represented by sequences of samples with zero amplitude.
 # This is a digital modulation scheme known as On-Off-Keying (OOK).
-# A constant frequency signal with amplitude `1` was transmitted and the transmitter was simply turned on and off with each `1` and `0`.
-# The signal that was transmitted is called the carrier and its frequency is called the carrier frequency.
+# A sinusoidal signal with constant frequency and constant amplitude was transmitted and the transmitter was simply turned on and off with each `1` and `0` in the morse code data.
+# The transmitted signal is called the carrier and its frequency is called the carrier frequency.
 #
 # These samples could be decoded without any further preprocessing (it should read "HI MOM" by the way, if I've done it correctly).
-# But it is more difficult to read messages from the data file's amplitude plot when multiple transmitters are active.
+# But it is more difficult to read messages from the data file's amplitude plot in sections where multiple transmitters were active.
 #
 # lit skip
 
@@ -143,14 +143,14 @@ plt.close()
 # The amplitude of these samples have been affected by three different transmitters.
 # Can we separate the effects of each transmitter to decode the three messages?
 # The answer is yes!
-# If each transmitter uses a different carrier frequency, then we can digitally filter these samples to wipe out the effects of all but one carrier.
-# But before we can do that, we need to know which carrier frequencies exist.
+# If each transmitter used a different carrier frequency, then we can digitally filter these samples to wipe out the effects of all but one carrier.
+# But before we can do that, we need to actually know the three carrier frequencies.
 #
-# This is where the DFT comes in.
-# We need to determine which carrier frequencies are active in the section of the data file containing these samples.
-# We can also use it to implement the digital filter but that is out of scope for this example.
-# Computing the DFT of this sequence of samples in time yields a sequence of samples in frequency i.e. the DFT outputs are equally spaced by some amount of Hz just like the original samples are equally spaced by some amount of seconds.
-# The frequency axis is centered around the tune frequency used by the radio to collect the data and I've arbitrarily placed that frequency at `0` while scaling the relative min and max to plus or minus `0.5`.
+# We can use the DFT to determine which carrier frequencies were active in this section of the recorded data.
+# We can also use it to implement the digital filter, but that is out of scope for this example.
+# Computing the DFT of these samples yields another sequence of samples, but instead of being separated by time, the DFT samples are separated by frequency.
+# The frequency axis is centered around the tune frequency used by the radio that collected the data.
+# I've arbitrarily placed that frequency at `0` while scaling the relative min and max to plus or minus `0.5`.
 #
 # lit skip
 
@@ -166,3 +166,7 @@ plt.close()
 # lit text
 #
 # Looking at the peaks in the DFT, we can see the three active carrier frequencies are close to `-0.25`, `0` and `0.25`.
+# The rest of this article explains the DFT in detail, showing how to derive its formula from first principles.
+#
+# Mathematical Background
+# -----------------------
