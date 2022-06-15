@@ -24,7 +24,7 @@ $(TARGET_DIR)/posts/index.html: PAGE_DESCRIPTION = List of all technical article
 $(TARGET_DIR)/posts/dft/index.html: PAGE_TITLE = DFT From Scratch
 $(TARGET_DIR)/posts/dft/index.html: PAGE_DESCRIPTION = Derivation of the discrete Fourier transform
 $(TARGET_DIR)/posts/dft/index.html: PAGE_METAS += fragments/highlightcss.html
-$(TARGET_DIR)/posts/dft/index.html: PAGE_FOOTERS += fragments/highlightjs.html
+$(TARGET_DIR)/posts/dft/index.html: PAGE_FOOTERS += fragments/highlightjs.html fragments/mathjax.html
 
 define target_page_rules =
 SRC_DIR := $(1)
