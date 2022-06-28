@@ -9,8 +9,10 @@
 # Motivating Example
 # ------------------
 #
-# We are given a recording of wireless morse code transmissions and told to extract and decode each message.
-# The data is formatted into complex samples, meaning that the magnitude and phase of the intercepted signal at each sampling instant is recorded by a complex number.
+# Radio waves can be used to implement wireless communication systems by modulating the phase or magnitude of a transmitted wave with message data that can be recovered by a complementary process at the receiving end of the system.
+# Complex numbers are a natural fit for representing such signals in digital form because they also consist of a phase and magnitude.
+# As such, many receivers implement a digitization process that amounts to sampling the phase and magnitude of received signals and recording this information as a sequence of complex numbers in computer memory for further analysis.
+# Suppose we are given such a recording of wireless morse code transmissions and tasked to extract and decode each message.
 #
 # lit skip
 
@@ -83,14 +85,14 @@ def next_power_of_2(n):
 # lit unskip
 # lit text
 #
-# Inspecting the data shows that the morse code messages are contained in the signal's amplitude.
-# When only a single transmitter is active in the data, plotting the amplitude of each sample yields a graphic that can be immediately decoded.
+# Inspecting the data shows that the morse code messages are contained in the signal's magnitude.
+# When only a single transmitter is active in the data, plotting the magnitude of each sample yields a graphic that can be immediately decoded.
 #
 # lit skip
 
 plt.plot(np.abs(morse_code_ook_signal("HI MOM", .25 * sample_rate, sample_rate)))
 plt.title("One Transmitter Active")
-plt.ylabel("Amplitude")
+plt.ylabel("Magnitude")
 plt.xlabel("Sample")
 plt.savefig("morse-code-1-user-time.png")
 plt.close()
@@ -99,12 +101,12 @@ plt.close()
 # lit unskip
 # lit text
 #
-# The _dits_ and _dahs_ of morse code are represented by sequences of samples with non-zero amplitude while the _spaces_ are represented by sequences of samples with zero amplitude.
+# The _dits_ and _dahs_ of morse code are represented by sequences of samples with non-zero magnitude while the _spaces_ are represented by sequences of samples with zero magnitude.
 # This is a digital modulation scheme known as On-Off-Keying (OOK).
-# A sinusoidal signal with constant frequency and constant amplitude was transmitted and the transmitter was simply turned on and off with each `1` and `0` in the morse code data.
+# A sinusoidal signal with constant frequency and constant magnitude was transmitted and the transmitter was simply turned on and off with each `1` and `0` in the morse code data.
 # The transmitted signal is called the carrier and its frequency is called the carrier frequency.
 #
-# It is much more difficult to read messages from an amplitude plot when multiple carriers are being transmitted.
+# It is much more difficult to read messages from a magnitude plot when multiple carriers are being transmitted.
 #
 # lit skip
 
@@ -122,7 +124,7 @@ max_sig_len = max(len(s) for s in sigs)
 sig = np.sum([np.pad(s, (0, max_sig_len-len(s))) for s in sigs], axis=0)
 plt.plot(np.abs(sig))
 plt.title("Three Transmitters Active")
-plt.ylabel("Amplitude")
+plt.ylabel("Magnitude")
 plt.xlabel("Sample")
 plt.savefig("morse-code-3-users-time.png")
 plt.close()
@@ -131,26 +133,23 @@ plt.close()
 # lit unskip
 # lit text
 #
-# The amplitude of each sample in this case has been affected by three different transmitters.
+# The magnitude of each sample in this case has been affected by three different transmitters.
 # Can we separate the effects of each transmitter to isolate each message?
 # The answer is yes!
 # If each transmitter used a different carrier frequency, then we can digitally filter these samples to wipe out the effects of all but one carrier.
 # But in order to do that, we need to actually know the values of the three different carrier frequencies.
 #
-# The DFT can help us achieve that goal by transforming this section of samples into the _frequency domain_.
-# Instead of being uniformly spaced in time, the DFT samples are uniformly spaced in frequency.
-# The minimum and maximum sampled frequencies are directly determined by the sampling rate used to collect the _time domain_ data.
+# The DFT can help us achieve that goal by transforming this sequence of _time domain_ samples into the _frequency domain_ where each sample will then represent a phase and magnitude weight of a particular frequency component in the signal, rather than a sampling instant.
+# It can also be used to implement the digital filter, but that is out of scope for the purpose of this example.
+# The minimum and maximum frequencies represented in the DFT output are directly determined by the sampling rate used to digitize the time domain data.
 # In the plot below, I've normalized the frequency axis so that these frequencies are assigned `-0.5` and `0.5` respectively.
-# Similar to how each sample in the data records the magnitude and phase of the intercepted signal at a particular sampling instant,
-# each sample in the DFT records the magnitude and phase associated with a particular frequency component in the intercepted signal.
-# We can therefore inspect the DFT output to see which carrier frequencies are being transmitted in this section of the data.
-# We can also use it to implement the digital filter, but that is out of scope for the purpose of this example.
+# We can inspect this plot to see which carrier frequencies are being transmitted in this sequency of samples.
 #
 # lit skip
 
 plt.plot(np.fft.fftshift(np.fft.fftfreq(nfft)), np.abs(np.fft.fftshift(np.fft.fft(sig, n=nfft))))
 plt.title("DFT of Samples Plotted Above")
-plt.ylabel("Amplitude")
+plt.ylabel("Magnitude")
 plt.xlabel("Normalized Frequency")
 plt.savefig("morse-code-3-users-freq.png")
 plt.close()
