@@ -139,11 +139,11 @@ plt.close()
 # If each transmitter used a different carrier frequency, then we can digitally filter these samples to wipe out the effects of all but one carrier.
 # But in order to do that, we need to actually know the values of the three different carrier frequencies.
 #
-# The DFT can help us achieve that goal by transforming this sequence of _time domain_ samples into the _frequency domain_ where each sample will then represent a phase and magnitude weight of a particular frequency component in the signal, rather than a sampling instant.
-# It can also be used to implement the digital filter, but that is out of scope for the purpose of this example.
+# The DFT can help us achieve that goal by transforming this sequence of _time domain_ samples into the _frequency domain_ where each sample will then represent a phase and magnitude weight of a particular frequency component in the signal, rather than a particular sampling instant.
+# The DFT can also be used to implement the digital filter, but that is out of scope for the purpose of this example.
 # The minimum and maximum frequencies represented in the DFT output are directly determined by the sampling rate used to digitize the time domain data.
 # In the plot below, I've normalized the frequency axis so that these frequencies are assigned `-0.5` and `0.5` respectively.
-# We can inspect this plot to see which carrier frequencies are being transmitted in this sequency of samples.
+# We can inspect this plot to see which carrier frequencies are active in this section of the data.
 #
 # lit skip
 
