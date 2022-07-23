@@ -4,15 +4,16 @@
 # The Discrete Fourier Transform From Scratch
 # ===========================================
 #
-# In this post I show how to derive the formula for the one-dimensional, complex discrete Fourier transform (DFT).
+# In this post I use an example problem to motivate the derivation of the one-dimensional, complex discrete Fourier transform (DFT).
 #
-# Motivating Example
-# ------------------
+# Problem Statement
+# -----------------
 #
 # Radio waves can be used to implement wireless communication systems by modulating the phase or magnitude of a transmitted wave with message data that can be recovered by a complementary process at the receiving end of the system.
 # Complex numbers are a natural fit for representing such signals in digital form because they also consist of a phase and magnitude.
-# As such, many receivers implement a digitization process that amounts to sampling the phase and magnitude of received signals and recording this information as a sequence of complex numbers in computer memory for further analysis.
-# Suppose we are given such a recording of wireless morse code transmissions and tasked to extract and decode each message.
+# As such, many receivers implement a digitization process that amounts to sampling the phase and magnitude of received signals and recording this information as a sequence of complex numbers in computer memory.
+# Suppose we are given such a recording from a receiver that was used to intercept wireless morse code transmissions.
+# We are tasked to extract and decode each morse code message.
 #
 # lit skip
 
@@ -85,7 +86,7 @@ def next_power_of_2(n):
 # lit unskip
 # lit text
 #
-# Inspecting the data shows that the morse code messages are contained in the signal's magnitude.
+# Inspecting the data shows that the morse code messages are contained in the recorded signal's magnitude.
 # When only a single transmitter is active in the data, plotting the magnitude of each sample yields a graphic that can be immediately decoded.
 #
 # lit skip
@@ -104,7 +105,7 @@ plt.close()
 # The _dits_ and _dahs_ of morse code are represented by sequences of samples with non-zero magnitude while the _spaces_ are represented by sequences of samples with zero magnitude.
 # This is a digital modulation scheme known as On-Off-Keying (OOK).
 # A sinusoidal signal with constant frequency and constant magnitude was transmitted and the transmitter was simply turned on and off with each `1` and `0` in the morse code data.
-# The transmitted signal is called the carrier and its frequency is called the carrier frequency.
+# The transmitted signal is called the carrier and its frequency is called the carrier frequency because it carries the data, in this case via OOK modulation.
 #
 # It is much more difficult to read messages from a magnitude plot when multiple carriers are being transmitted.
 #
@@ -134,24 +135,5 @@ plt.close()
 # lit text
 #
 # The magnitude of each sample in this case has been affected by three different transmitters.
-# Can we separate the effects of each transmitter to isolate each message?
-# The answer is yes!
-# If each transmitter used a different carrier frequency, then we can digitally filter these samples to wipe out the effects of all but one carrier.
-# But in order to do that, we need to actually know the values of the three different carrier frequencies.
+# Can we separate the effects of each transmitter to isolate and decode their messages?
 #
-# The DFT can help us achieve that goal by transforming this sequence of _time domain_ samples into the _frequency domain_ where each sample will then represent a phase and magnitude weight of a particular frequency component in the signal, rather than a particular sampling instant.
-# The DFT can also be used to implement the digital filter, but that is out of scope for the purpose of this example.
-# The minimum and maximum frequencies represented in the DFT output are directly determined by the sampling rate used to digitize the time domain data.
-# In the plot below, I've normalized the frequency axis so that these frequencies are assigned `-0.5` and `0.5` respectively.
-# We can inspect this plot to see which carrier frequencies are active in this section of the data.
-#
-# lit skip
-
-plt.plot(np.fft.fftshift(np.fft.fftfreq(nfft)), np.abs(np.fft.fftshift(np.fft.fft(sig, n=nfft))))
-plt.title("DFT of Samples Plotted Above")
-plt.ylabel("Magnitude")
-plt.xlabel("Normalized Frequency")
-plt.savefig("morse-code-3-users-freq.png")
-plt.close()
-
-# lit execute
