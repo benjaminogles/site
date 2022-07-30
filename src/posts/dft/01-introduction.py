@@ -104,7 +104,7 @@ plt.close()
 #
 # The _dits_ and _dahs_ of morse code are represented by sequences of samples with non-zero magnitude while the _spaces_ are represented by sequences of samples with zero magnitude.
 # This is a digital modulation scheme known as On-Off-Keying (OOK).
-# A sinusoidal signal with constant frequency and constant magnitude was transmitted and the transmitter was simply turned on and off with each `1` and `0` in the morse code data.
+# A sinusoidal signal with constant frequency and constant magnitude is transmitted and the transmitter is simply turned on and off with each `1` and `0` in the morse code data.
 # The transmitted signal is called the carrier and its frequency is called the carrier frequency because it carries the data, in this case via OOK modulation.
 #
 # It is much more difficult to read messages from a magnitude plot when multiple carriers are being transmitted.
@@ -134,6 +134,6 @@ plt.close()
 # lit unskip
 # lit text
 #
-# The magnitude of each sample in this case has been affected by three different transmitters.
+# In this case, the magnitude of each sample has been affected by three different transmitters.
 # Can we separate the effects of each transmitter to isolate and decode their messages?
 #
