@@ -6,11 +6,11 @@
 #
 # In this post I use an example problem to motivate the derivation of the one-dimensional, complex discrete Fourier transform (DFT).
 #
-# Problem Statement
-# -----------------
+# Introduction and Problem Statement
+# ----------------------------------
 #
-# Radio waves can be used to implement wireless communication systems by modulating the phase or magnitude of a transmitted wave with message data that can be recovered by a complementary process at the receiving end of the system.
-# Complex numbers are a natural fit for representing such signals in digital form because they also consist of a phase and magnitude.
+# Radio waves can be used to implement wireless communication systems by modulating a transmitted wave's phase or magnitude with message data that can be recovered by a complementary process at the receiving end of the system.
+# Complex numbers are a natural fit for representing such signals in digital form because each complex sample is also completely defined by its phase and magnitude.
 # As such, many receivers implement a digitization process that amounts to sampling the phase and magnitude of received signals and recording this information as a sequence of complex numbers in computer memory.
 # Suppose we are given such a recording from a receiver that was used to intercept wireless morse code transmissions.
 # We are tasked to extract and decode each morse code message.
@@ -86,8 +86,8 @@ def next_power_of_2(n):
 # lit unskip
 # lit text
 #
-# Inspecting the data shows that the morse code messages are contained in the recorded signal's magnitude.
-# When only a single transmitter is active in the data, plotting the magnitude of each sample yields a graphic that can be immediately decoded.
+# Inspecting the data shows that the signal's magnitude has been modulated by the morse code messages.
+# Plotting each sample's magnitude yields a graphic that can be immediately decoded if only a single wave is being transmitted.
 #
 # lit skip
 
@@ -134,6 +134,6 @@ plt.close()
 # lit unskip
 # lit text
 #
-# In this case, the magnitude of each sample has been affected by three different transmitters.
-# Can we separate the effects of each transmitter to isolate and decode their messages?
+# In this case, the magnitude of each sample has been affected by three different carriers.
+# Can we separate out the effects of each carrier to isolate and decode their messages?
 #
