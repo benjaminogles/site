@@ -6,13 +6,13 @@
 #
 # In this post I use an example problem to motivate the derivation of the one-dimensional, complex discrete Fourier transform (DFT).
 #
-# Introduction and Problem Statement
-# ----------------------------------
+# Example Problem
+# ---------------
 #
-# Radio waves can be used to implement wireless communication systems by modulating a transmitted wave's phase or magnitude with message data that can be recovered by a complementary process at the receiving end of the system.
-# Complex numbers are a natural fit for representing such signals in digital form because each complex sample is also completely defined by its phase and magnitude.
-# As such, many receivers implement a digitization process that amounts to sampling the phase and magnitude of received signals and recording this information as a sequence of complex numbers in computer memory.
-# Suppose we are given such a recording from a receiver that was used to intercept wireless morse code transmissions.
+# Radio waves can be used to implement wireless communication systems by modulating a _carrier wave_'s phase and/or magnitude with message data that is recovered by a complementary demodulating process at the receiving end of the system.
+# Complex numbers are a natural fit for representing communication signals in digital form because they are defined in terms of phase and magnitude.
+# As such, many receivers implement a digitization process that amounts to sampling the phase and magnitude of an analog input and recording this information as a sequence of complex numbers in computer memory.
+# Suppose we are given a recording of complex samples collected by a receiver that was used to intercept wireless morse code transmissions.
 # We are tasked to extract and decode each morse code message.
 #
 # lit skip
@@ -86,8 +86,8 @@ def next_power_of_2(n):
 # lit unskip
 # lit text
 #
-# Inspecting the data shows that the signal's magnitude has been modulated by the morse code messages.
-# Plotting each sample's magnitude yields a graphic that can be immediately decoded if only a single wave is being transmitted.
+# At the beginning of the recording, only one morse code transmitter is active.
+# Plotting each sample's magnitude yields a graphic that can be immediately decoded.
 #
 # lit skip
 
@@ -104,10 +104,8 @@ plt.close()
 #
 # The _dits_ and _dahs_ of morse code are represented by sequences of samples with non-zero magnitude while the _spaces_ are represented by sequences of samples with zero magnitude.
 # This is a digital modulation scheme known as On-Off-Keying (OOK).
-# A sinusoidal signal with constant frequency and constant magnitude is transmitted and the transmitter is simply turned on and off with each `1` and `0` in the morse code data.
-# The transmitted signal is called the carrier and its frequency is called the carrier frequency because it carries the data, in this case via OOK modulation.
 #
-# It is much more difficult to read messages from a magnitude plot when multiple carriers are being transmitted.
+# It is much more difficult to decode a magnitude plot of samples later in the recording when multiple morse code transmitters are active.
 #
 # lit skip
 
@@ -134,6 +132,6 @@ plt.close()
 # lit unskip
 # lit text
 #
-# In this case, the magnitude of each sample has been affected by three different carriers.
+# In this case, the magnitude of each sample has been affected by three different carrier waves.
 # Can we separate out the effects of each carrier to isolate and decode their messages?
 #
