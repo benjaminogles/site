@@ -4,10 +4,101 @@
 # The Discrete Fourier Transform From Scratch
 # ===========================================
 #
-# In this post I use an example problem to motivate the derivation of the one-dimensional, complex discrete Fourier transform (DFT).
+# In this post I use a simple example problem to motivate the derivation of the one-dimensional, complex discrete Fourier transform (DFT).
+# At the end of the post, I extend this example problem to show how it may appear in practice.
 #
 # Example Problem
 # ---------------
+#
+# I'm going to create a test signal by adding samples from two sinusoids oscillating at different frequencies.
+# I will pick the frequencies at random and the problem is solved when we find a way to estimate these frequencies values by analyzing the test signal.
+#
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Use a sample rate of 1 so that sample units are synonymous with whatever
+# physical units we would normally use e.g. time
+# In other words, our frequencies have units cycles per sample
+nsamples = 128
+
+# I want at least a full cycle's worth of samples
+min_freq = 1/nsamples
+# I want several samples per cycle for smoother plots
+max_freq = 1/(nsamples/8)
+
+# Pick two frequencies
+rng = np.random.default_rng(seed=192837465)
+freqs = rng.uniform(min_freq, max_freq, size=2)
+
+# Generate nsamples of a sine wave at each frequency
+sine1 = np.sin(2 * np.pi * freqs[0] * np.arange(nsamples))
+sine2 = np.sin(2 * np.pi * freqs[1] * np.arange(nsamples))
+signal = sine1 + sine2
+
+# lit skip
+plt.plot(sine1, label='sine1')
+plt.plot(sine2, label='sine2')
+plt.plot(signal, label='signal')
+plt.legend()
+plt.savefig('sines.png')
+plt.close()
+
+# lit unskip
+# lit execute
+# lit text
+#
+# If we were allowed to analyze each sine wave individually, we could estimate their frequencies by counting cycles.
+#
+
+def count_zero_crossings(x, threshold=0.25):
+    # Assign True/False based on sign after thresholding to larger values
+    positive = x[np.abs(x) > abs(threshold)] > 0
+    # Compare adjacent values and count mismatches
+    return np.count_nonzero(positive[:-1] != positive[1:])
+
+# Two zero crossings per cycle and we estimate the number of cycles per sample
+estimates = [count_zero_crossings(x)/2/nsamples for x in (sine1, sine2)]
+
+print(f'Actual Frequencies: {freqs}')
+print(f'Estimated Frequencies: {estimates}')
+
+# lit text
+#
+# This gives us reasonably close estimates without much effort.
+#
+# lit execute
+# lit text
+#
+# For this example specifically, you could probably adapt this method to work on the test signal as well because the two frequencies are easy enough to pick out visually.
+# But it would be nice to identify a method that also works on signals containing more than two component frequencies.
+
+print(count_zero_crossings(signal)/2/nsamples)
+
+# lit text
+#
+# As it is, this cycle counting method is only useful for estimating the lower frequency.
+#
+# lit execute
+# lit text
+#
+# Filtering
+# ---------
+#
+# We aren't allowed to analyze the sinusoids individually, but that idea leads us in the right direction of trying to separate them from each other somehow.
+# At the very least, if we can find a way to separate "low" frequency sinusoids from "high" frequency sinusoids in a signal, then we will immediately be able to use the cycle counting method on each "half" of our test signal in this example.
+#
+# So we need a function, or filter, that copies its input in a frequency-dependent manner.
+# As a start, it should pass lower frequency oscillations while rejecting higher frequency oscillations.
+# In fact, let's start by trying to only accept oscillations from the lowest possible frequency.
+#
+# A frequency of 0 corresponds to a value that never changes.
+# So a filter targeting this frequency will reject all oscillations.
+# And copy through only whatever constant offset existed in the input.
+# A reasonable implementation then might compute mean values along a sliding window of samples.
+# This would smooth oscillations down to whatever constant level they are oscillating around.
+
+# lit skip
 #
 # Radio waves can be used to implement wireless communication systems by modulating a _carrier wave_'s phase and/or magnitude with message data that is recovered by a complementary demodulating process at the receiving end of the system.
 # Complex numbers are a natural fit for representing communication signals in digital form because they are defined in terms of phase and magnitude.
@@ -15,12 +106,6 @@
 # Suppose we are given a recording of complex samples collected by a receiver that was used to intercept wireless morse code transmissions.
 # We are tasked to extract and decode each morse code message.
 #
-# lit skip
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-rng = np.random.default_rng(seed=19281730)
 
 sample_rate = 1.0
 morse_code_symbol_period = 1/sample_rate * 40
@@ -83,13 +168,10 @@ def random_morse_code_ook_signal(nletters, fc, fs, phi=0):
 def next_power_of_2(n):
     return 1 if n == 0 else 2 ** (n-1).bit_length()
 
-# lit unskip
-# lit text
 #
 # At the beginning of the recording, only one morse code transmitter is active.
 # Plotting each sample's magnitude yields a graphic that can be immediately decoded.
 #
-# lit skip
 
 plt.plot(np.abs(morse_code_ook_signal("HI MOM", .25 * sample_rate, sample_rate)))
 plt.title("One Transmitter Active")
@@ -98,16 +180,12 @@ plt.xlabel("Sample")
 plt.savefig("morse-code-1-user-time.png")
 plt.close()
 
-# lit execute
-# lit unskip
-# lit text
 #
 # The _dits_ and _dahs_ of morse code are represented by sequences of samples with non-zero magnitude while the _spaces_ are represented by sequences of samples with zero magnitude.
 # This is a digital modulation scheme known as On-Off-Keying (OOK).
 #
 # It is much more difficult to decode a magnitude plot of samples later in the recording when multiple morse code transmitters are active.
 #
-# lit skip
 
 message_len = 8
 max_possible_symbols = message_len * max([len(m) for m in morse_code_symbol_map.values()])
@@ -121,16 +199,13 @@ sigs = [
         ]
 max_sig_len = max(len(s) for s in sigs)
 sig = np.sum([np.pad(s, (0, max_sig_len-len(s))) for s in sigs], axis=0)
-plt.plot(np.abs(sig))
-plt.title("Three Transmitters Active")
-plt.ylabel("Magnitude")
-plt.xlabel("Sample")
-plt.savefig("morse-code-3-users-time.png")
-plt.close()
+# plt.plot(np.abs(sig))
+# plt.title("Three Transmitters Active")
+# plt.ylabel("Magnitude")
+# plt.xlabel("Sample")
+# plt.savefig("morse-code-3-users-time.png")
+# plt.close()
 
-# lit execute
-# lit unskip
-# lit text
 #
 # In this case, the magnitude of each sample has been affected by three different carrier waves.
 # Can we separate out the effects of each carrier to isolate and decode their messages?
