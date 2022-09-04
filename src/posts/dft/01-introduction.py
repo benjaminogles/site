@@ -5,33 +5,29 @@
 # ===========================================
 #
 # In this post I use a simple example problem to motivate the derivation of the one-dimensional, complex discrete Fourier transform (DFT).
-# At the end of the post, I extend this example problem to show how it may appear in practice.
 #
 # Example Problem
 # ---------------
 #
-# I'm going to create a test signal by adding samples from two sinusoids oscillating at different frequencies.
-# I will pick the frequencies at random and the problem is solved when we find a way to estimate these frequencies values by analyzing the test signal.
+# Estimate the frequencies of two discrete sinusoidal signals after they are added together.
 #
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Use a sample rate of 1 so that sample units are synonymous with whatever
-# physical units we would normally use e.g. time
-# In other words, our frequencies have units cycles per sample
+# Pick an arbitrary number of samples to generate
 nsamples = 128
 
-# I want at least a full cycle's worth of samples
+# Require each wave to complete at least one cycle in nsamples
 min_freq = 1/nsamples
-# I want several samples per cycle for smoother plots
+# Require at least nsamples/8 samples per cycle for smoother plotting
 max_freq = 1/(nsamples/8)
 
 # Pick two frequencies
 rng = np.random.default_rng(seed=192837465)
 freqs = rng.uniform(min_freq, max_freq, size=2)
 
-# Generate nsamples of a sine wave at each frequency
+# Generate nsamples of a sine wave at each frequency and add
 sine1 = np.sin(2 * np.pi * freqs[0] * np.arange(nsamples))
 sine2 = np.sin(2 * np.pi * freqs[1] * np.arange(nsamples))
 signal = sine1 + sine2
@@ -48,7 +44,7 @@ plt.close()
 # lit execute
 # lit text
 #
-# If we were allowed to analyze each sine wave individually, we could estimate their frequencies by counting cycles.
+# If the signal contained a singl.
 #
 
 def count_zero_crossings(x, threshold=0.25):
@@ -88,16 +84,80 @@ print(count_zero_crossings(signal)/2/nsamples)
 # We aren't allowed to analyze the sinusoids individually, but that idea leads us in the right direction of trying to separate them from each other somehow.
 # At the very least, if we can find a way to separate "low" frequency sinusoids from "high" frequency sinusoids in a signal, then we will immediately be able to use the cycle counting method on each "half" of our test signal in this example.
 #
-# So we need a function, or filter, that copies its input in a frequency-dependent manner.
-# As a start, it should pass lower frequency oscillations while rejecting higher frequency oscillations.
+# So we need a function, or filter, that copies its input to the output in a frequency-dependent manner.
+# As a start, it should accept or amplify lower frequency oscillations and reject or attenuate higher frequency oscillations.
 # In fact, let's start by trying to only accept oscillations from the lowest possible frequency.
 #
-# A frequency of 0 corresponds to a value that never changes.
-# So a filter targeting this frequency will reject all oscillations.
-# And copy through only whatever constant offset existed in the input.
-# A reasonable implementation then might compute mean values along a sliding window of samples.
-# This would smooth oscillations down to whatever constant level they are oscillating around.
+# A frequency of 0 corresponds to a constant valued signal.
+# So a filter targeting this frequency should reject all oscillations, leaving only the mean value.
+# This hints at an implementation that computes the mean of samples in a sliding window.
+#
 
+def moving_average(x, size, mode='valid'):
+    return np.convolve(x, np.ones(size)/size, mode=mode)
+
+# lit text
+#
+# The convolve function generalizes the idea of a moving average by allowing you to specify a weight for each position in the sliding window.
+# So a moving average reduces to specifying an equal weight for each position, scaled by the size of the window.
+# The mode parameter controls how the edges of the signal are handled and we use "valid" mode by default to only compute output samples when the window and signal completely overlap.
+#
+# To effectively filter down to a signal's mean value, the window size must be large enough to incorporate peaks and valleys of the lowest frequency signals we want to reject.
+#
+
+# Estimate the number of samples in one cycle of the lower frequency sine wave
+samples_per_cycle = 1/min(estimates)
+# Try a window size that won't filter the lower frequency as much
+small_window_result = moving_average(signal, int(samples_per_cycle/2), 'same')
+# Try a window size that will filter the lower frequency more
+large_window_result = moving_average(signal, int(samples_per_cycle*2), 'same')
+# Use "same" mode to zero-pad edges and get an output sample for every input sample
+
+# lit skip
+plt.plot(signal, label='signal')
+plt.plot(small_window_result, label='small-window')
+plt.plot(large_window_result, label='large-window')
+plt.legend()
+plt.savefig('averaged-signal.png')
+plt.close()
+
+# lit unskip
+# lit execute
+# lit text
+#
+# If we take this reasoning to the limit, it becomes clear that the moving average filter will never isolate the zero-frequency component completely.
+# We will always have a finite number of input samples and the signal can always contain very low frequency oscillations that won't complete a full cycle within that finite window.
+# Let's run some tests to see exactly which frequencies are effectively filtered by a moving average filter.
+#
+
+# Test a bunch of frequencies in [0, 0.5)
+test_freqs = np.linspace(0, 0.5, 1000, endpoint=False)
+# Make each test signal as long as the filter
+t = np.arange(nsamples)
+# Using "valid" mode, we will only get one output sample per test
+output = [ moving_average(np.exp(2j*np.pi*f*t), nsamples) for f in test_freqs ]
+
+# lit skip
+plt.plot(test_freqs, np.abs(output))
+plt.savefig('moving-average-mag-response.png')
+plt.close()
+
+# lit unskip
+# lit execute
+# lit text
+#
+# As expected, the filter output is very close to the mean value when the input is a high frequency sine wave.
+# Let's zoom in on the lower end.
+#
+
+# lit skip
+plt.plot(test_freqs[:nsamples//4], np.abs(output)[:nsamples//4])
+plt.savefig('moving-average-mag-response-zoomed.png')
+plt.close()
+
+# lit unskip
+# lit execute
+#
 # lit skip
 #
 # Radio waves can be used to implement wireless communication systems by modulating a _carrier wave_'s phase and/or magnitude with message data that is recovered by a complementary demodulating process at the receiving end of the system.
@@ -173,12 +233,12 @@ def next_power_of_2(n):
 # Plotting each sample's magnitude yields a graphic that can be immediately decoded.
 #
 
-plt.plot(np.abs(morse_code_ook_signal("HI MOM", .25 * sample_rate, sample_rate)))
-plt.title("One Transmitter Active")
-plt.ylabel("Magnitude")
-plt.xlabel("Sample")
-plt.savefig("morse-code-1-user-time.png")
-plt.close()
+# plt.plot(np.abs(morse_code_ook_signal("HI MOM", .25 * sample_rate, sample_rate)))
+# plt.title("One Transmitter Active")
+# plt.ylabel("Magnitude")
+# plt.xlabel("Sample")
+# plt.savefig("morse-code-1-user-time.png")
+# plt.close()
 
 #
 # The _dits_ and _dahs_ of morse code are represented by sequences of samples with non-zero magnitude while the _spaces_ are represented by sequences of samples with zero magnitude.
