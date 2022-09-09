@@ -119,3 +119,4 @@ $(foreach d,$(SOURCE_DIRS),$(eval $(call target_page_rules,$(d))))
 
 clean:
 	-rm -r "$(TARGET_DIR)" "$(TOOLS_DIR)"
+	-git clean -xf $(SOURCE_DIR)
