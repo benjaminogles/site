@@ -8,7 +8,7 @@ include $(LIT_SITE_MK)
 # copy misc assets to the build directory when they change
 $(TARGET_DIR)/css: $(wildcard css/*.css)
 $(TARGET_DIR)/css: | $(TARGET_DIR)
-	[ -d "$@" ] && rm -r "$@"
+	if [ -d "$@" ]; then rm -r "$@"; fi
 	cp -r "$(patsubst $(TARGET_DIR)/%,%,$@)" "$@"
 
 # default page information
