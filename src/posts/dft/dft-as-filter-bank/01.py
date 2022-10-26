@@ -21,14 +21,14 @@ import matplotlib.patches as plt_patches
 
 # Seed random number generator
 import numpy as np
-rng = np.random.default_rng(seed=192678)
+rng = np.random.default_rng(seed=184027)
 # Pick number of waves to sample
 nwaves = 4
 # Pick number of samples to generate
 nsamples = 128
 # Bound cycle length in samples for smoother plots
 min_wavelength_samps = 10
-# Pick random frequency for each wave (cycles per sample)
+# Pick random frequency for each wave (cycles/sample)
 min_freq = -1.0 / min_wavelength_samps
 max_freq = 1.0 / min_wavelength_samps
 freqs = rng.uniform(min_freq, max_freq, nwaves)
@@ -52,6 +52,18 @@ plt.close()
 # This is what the real and imaginary parts of our signal look like.
 #
 # lit execute
+#
+# If you are used to frequency expressed in Hertz, note that I've simply factored out physical units by setting our sample spacing equal to 1 so that sample index can be used as a proxy for e.g. time.
+# In an actual application, you could scale our normalized frequency (cycles/sample) by the sampling rate (samples/second) to get back to Hertz (cycles/second).
+#
+# I have biased the generation of the example problem towards lower frequencies because more samples per cycle makes some of the plots look nicer.
+# Per Nyquist, the actual bounds in frequency that our complex samples could accurately represent is `(-0.5, 0.5)`.
+# As an example, if you tried to construct a wave with a frequency of `1.0` cycles/sample, then it would be indistinguishable from a `0.0` cycles/sample wave because the phase of each sample would be `2π` which yields the same result as when the phase of each sample is `0`.
+# Other exceedingly low or high frequencies will similarly contain samples that are entirely subsumed by a wave within our `(-0.5, 0.5)` frequency range (possibly on the other side of `0.0`).
+#
+# Mathematically, frequency is simply defined as the derivative of phase (one cycle is `2π` radians) so nothing is stopping it from being negative.
+# On a more practical level, I will show later on how you can shift the phases of complex samples to center an arbitrary frequency at the `0` cycles/sample level.
+# Then the negative frequencies simply represent frequencies lower than the centered frequency.
 #
 # The Anatomy of a (Complex) Wave
 # -------------------------------
@@ -156,12 +168,46 @@ print('Assertions passed')
 #
 # Before we start attempting to solve the problem, I want to give some more context as to why it is a useful example.
 # We'll see that the structure of the problem is obviously useful for introducing the DFT.
-# But it is not solely contrived for this purpose.
-# It has a strong connection to practical application.
+# But it is not contrived solely for this purpose.
+# It is also closely related to practical application.
 #
 # Pure sinusoids can be modulated and transmitted with radio hardware to implement wireless communication systems.
 # Multiple transmitters can be active at the same time if they are transmitting at different frequencies with enough separation between them.
 # Our example problem simulates the physical phenomenon (called wave superposition) that occurs when waves from multiple transmitters meet in the air.
 # The waves combine such that the displacement of the combined wave at every point is equal to the sum of the individual wave displacements.
-# 
+#
+# If you used another set of radio hardware to receive and digitize this combined waveform, you would get something that looks like our example problem.
+# You could use the DFT to see which frequencies are active.
+# As a sneak peek, here is a zoomed in look at the DFT of our combined signal.
+#
+# lit skip
 
+S = np.fft.fftshift(np.fft.fft(signal, nsamples*2))/(nsamples*2)
+f = np.fft.fftshift(np.fft.fftfreq(nsamples*2))
+plt.plot(f[nsamples//2:-nsamples//2], np.real(S * S.conj())[nsamples//2:-nsamples//2])
+plt.title('DFT(signal)')
+plt.xlabel('frequency (cycles/sample)')
+plt.ylabel('mag^2')
+plt.savefig('dft.png')
+plt.close()
+
+# lit unskip
+# lit execute
+# lit text
+#
+# Step 1
+# ------
+#
+# With that background out of the way, we can get started on solving this example problem.
+# As a first step, we could pick a frequency and try and determine whether a wave at that frequency contributed to the sum that created this signal.
+# The simplest frequency to reason about is `0.0` cycles/sample because it yields a constant sample sequence.
+# When summed into another signal, it would simply raise or lower the mean level of the real and imaginary part.
+# Assuming that only one wave assumed the frequency `0.0` cycles/sample, we can detect this wave by computing the mean of our signal.
+#
+
+print(np.mean(signal))
+
+# lit text
+#
+#
+# lit execute
