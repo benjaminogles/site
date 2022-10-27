@@ -16,7 +16,7 @@ import matplotlib.patches as plt_patches
 #
 # We will generate several arrays of complex samples, each one representing a pure sinusoid oscillating at a unique, constant frequency.
 # We will then combine these arrays by adding aligned samples together.
-# Our task will be to estimate the individual frequency of each original wave by analyzing the combined signal.
+# Our task will be to estimate the individual frequency of each wave by analyzing the combined signal.
 #
 
 # Seed random number generator
@@ -26,6 +26,8 @@ rng = np.random.default_rng(seed=184027)
 nwaves = 4
 # Pick number of samples to generate
 nsamples = 128
+# Sample indices
+t = np.arange(nsamples)
 # Bound cycle length in samples for smoother plots
 min_wavelength_samps = 10
 # Pick random frequency for each wave (cycles/sample)
@@ -33,7 +35,7 @@ min_freq = -1.0 / min_wavelength_samps
 max_freq = 1.0 / min_wavelength_samps
 freqs = rng.uniform(min_freq, max_freq, nwaves)
 # Generate samples for each wave
-waves = [np.exp(2j*np.pi*f*np.arange(nsamples)) for f in freqs]
+waves = [np.exp(2j * np.pi * f * t) for f in freqs]
 # Combine
 signal = np.sum(waves, axis=0)
 
@@ -56,10 +58,10 @@ plt.close()
 # If you are used to frequency expressed in Hertz, note that I've simply factored out physical units by setting our sample spacing equal to 1 so that sample index can be used as a proxy for e.g. time.
 # In an actual application, you could scale our normalized frequency (cycles/sample) by the sampling rate (samples/second) to get back to Hertz (cycles/second).
 #
-# I have biased the generation of the example problem towards lower frequencies because more samples per cycle makes some of the plots look nicer.
+# I have biased the generation of the example problem towards lower frequencies (in an absolute value sense) because more samples per cycle makes some of the plots look nicer.
 # Per Nyquist, the actual bounds in frequency that our complex samples could accurately represent is `(-0.5, 0.5)`.
-# As an example, if you tried to construct a wave with a frequency of `1.0` cycles/sample, then it would be indistinguishable from a `0.0` cycles/sample wave because the phase of each sample would be `2π` which yields the same result as when the phase of each sample is `0`.
-# Other exceedingly low or high frequencies will similarly contain samples that are entirely subsumed by a wave within our `(-0.5, 0.5)` frequency range (possibly on the other side of `0.0`).
+# As an example, if you tried to construct a wave with a frequency of `1.0` cycles/sample, then it would be indistinguishable from a `0` cycles/sample wave because the phase of each sample would be an integer multiple of `2π` which yields the same result as when the phase of each sample is `0`.
+# Other exceedingly low or high frequencies will similarly yield the same set of samples as a wave within our `(-0.5, 0.5)` frequency range (possibly on the other side of `0`).
 #
 # Mathematically, frequency is simply defined as the derivative of phase (one cycle is `2π` radians) so nothing is stopping it from being negative.
 # On a more practical level, I will show later on how you can shift the phases of complex samples to center an arbitrary frequency at the `0` cycles/sample level.
@@ -172,7 +174,7 @@ print('Assertions passed')
 # It is also closely related to practical application.
 #
 # Pure sinusoids can be modulated and transmitted with radio hardware to implement wireless communication systems.
-# Multiple transmitters can be active at the same time if they are transmitting at different frequencies with enough separation between them.
+# Multiple transmitters can be active at the same time if they are transmitting at different frequencies with sufficient separation.
 # Our example problem simulates the physical phenomenon (called wave superposition) that occurs when waves from multiple transmitters meet in the air.
 # The waves combine such that the displacement of the combined wave at every point is equal to the sum of the individual wave displacements.
 #
@@ -199,15 +201,33 @@ plt.close()
 # ------
 #
 # With that background out of the way, we can get started on solving this example problem.
-# As a first step, we could pick a frequency and try and determine whether a wave at that frequency contributed to the sum that created this signal.
-# The simplest frequency to reason about is `0.0` cycles/sample because it yields a constant sample sequence.
-# When summed into another signal, it would simply raise or lower the mean level of the real and imaginary part.
-# Assuming that only one wave assumed the frequency `0.0` cycles/sample, we can detect this wave by computing the mean of our signal.
+# As a first step, we could pick a frequency and try to detect whether a wave at that frequency was summed into our signal.
+# The simplest frequency to reason about is `0` cycles/sample because its wave is just a sequence of one repeated sample:
+
+phi = rng.uniform() # random phase offset
+zero_freq_wave = magnitudes * np.exp(1j * (2 * np.pi * 0 * t + phi))
+repeated_samples = magnitudes * np.exp(1j * phi)
+assert np.allclose(zero_freq_wave, repeated_samples)
+
+# lit text
 #
+# When summed into another signal, this wave would simply shift each sample up or down by a constant.
+# This means that we can detect a wave at `0` cycles/sample in our signal by computing the signal's mean value.
+#
+
+# lit skip
+assert np.abs(np.mean(signal)) < 0.2, "did the rng seed change?"
+# lit unskip
 
 print(np.mean(signal))
 
 # lit text
 #
+# In this case, the mean value our signal is near `0` in both the real and imaginary parts.
+# We would expect a larger mean value if one of our summed waves had a frequency of `0`.
 #
 # lit execute
+#
+# But wouldn't we also expect a mean value of _exactly_ `0` if none of our summed waves had a frequency of `0`.
+# In this case, all of our waves should be oscillating evenly around `0`.
+#
