@@ -5,9 +5,14 @@ $(LIT_SITE_MK):
 
 include $(LIT_SITE_MK)
 
-# copy misc assets to the build directory when they change
-$(TARGET_DIR)/css: $(wildcard css/*.css)
-	cp -r css $(TARGET_DIR)
+$(TARGET_DIR)/css:
+	mkdir -p $@
+STYLESHEETS := $(addprefix $(TARGET_DIR)/, $(wildcard css/*.css))
+$(STYLESHEETS): | $(TARGET_DIR)/css
+$(STYLESHEETS): $(TARGET_DIR)/%: %
+	cp "$<" "$@"
+
+all: $(STYLESHEETS)
 
 # default page information
 PAGE_AUTHOR := Ben Ogles
