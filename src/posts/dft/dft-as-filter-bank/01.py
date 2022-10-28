@@ -10,7 +10,7 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
-# A fair bit of signal processing background is covered along the way, including sampling, complex numbers and an introduction to filtering.
+# A fair bit of signal processing background is covered along the way, including sampling, complex numbers and linear systems.
 #
 # Example Problem
 # ---------------
@@ -296,3 +296,26 @@ plt.close()
 
 # lit unskip
 # lit execute
+# lit text
+#
+# I've marked the first few frequencies in either direction that have a mean value of `0`.
+# Unsurprisingly, they are frequencies that complete a whole number of cycles (`1`, `2` or `3`) in the number of samples we collected.
+# Between these are frequencies that include a partial cycle within the sampled time range.
+#
+# We see small peaks right in the middle of the zero-mean frequencies because the cosine and sine functions cross zero halfway through a cycle, so the last half of a cycle balances out the first half of the cycle.
+# The peaks are shorter as we move away from `0` because cycles are shorter (wavelength) as the absolute value of frequency increases.
+#
+# As mentioned above, frequencies very close to zero will not complete even one cycle.
+# These frequencies have relatively large mean values.
+# So our detector for the zero-frequency wave is actually a detector for near-zero-frequency waves.
+#
+# You may wonder if these test results are directly applicable to our example problem.
+# Here I applied our detector to a pure sinusoid in each test.
+# In our example problem, I applied the detector to the sum of several pure sinusoids.
+# How do we characterize the behavior of our detector for near-zero-frequency waves when the input is more complicated?
+#
+# Background - Linear Systems
+# ---------------------------
+#
+# The magnitude of our mean sample was close enough to zero that we can safely say that our waves are closer to one of the other frequencies labeled in this plot.
+#
