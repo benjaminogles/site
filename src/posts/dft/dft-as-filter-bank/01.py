@@ -10,6 +10,7 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
+# A fair bit of signal processing background is covered along the way, including sampling, complex numbers and an introduction to filtering.
 #
 # Example Problem
 # ---------------
@@ -55,20 +56,35 @@ plt.close()
 #
 # lit execute
 #
-# If you are used to frequency expressed in Hertz, note that I've simply factored out physical units by setting our sample spacing equal to 1 so that sample index can be used as a proxy for e.g. time.
+# Background - Sampling
+# ---------------------
+#
+# If you are used to frequency in Hertz, note that I've simply factored out physical units by setting our sample spacing equal to 1 so that sample index can be used as a proxy for e.g. time.
 # In an actual application, you could scale our normalized frequency (cycles/sample) by the sampling rate (samples/second) to get back to Hertz (cycles/second).
 #
-# I have biased the generation of the example problem towards lower frequencies (in an absolute value sense) because more samples per cycle makes some of the plots look nicer.
-# Per Nyquist, the actual bounds in frequency that our complex samples could accurately represent is `(-0.5, 0.5)`.
-# As an example, if you tried to construct a wave with a frequency of `1.0` cycles/sample, then it would be indistinguishable from a `0` cycles/sample wave because the phase of each sample would be an integer multiple of `2π` which yields the same result as when the phase of each sample is `0`.
-# Other exceedingly low or high frequencies will similarly yield the same set of samples as a wave within our `(-0.5, 0.5)` frequency range (possibly on the other side of `0`).
+# I have biased the generation of the example problem towards middle frequencies because more samples per cycle makes some of the plots look nicer.
+# Per Nyquist, the actual bounds in frequency that our complex samples can accurately represent is `(-0.5, 0.5)`.
 #
-# Mathematically, frequency is simply defined as the derivative of phase (one cycle is `2π` radians) so nothing is stopping it from being negative.
-# On a more practical level, I will show later on how you can shift the phases of complex samples to center an arbitrary frequency at the `0` cycles/sample level.
-# Then the negative frequencies simply represent frequencies lower than the centered frequency.
+# The notion of negative frequency may be confusing.
+# As the derivative of phase, frequency is negative when phase (`2πft` above) is decreasing sample to sample.
+# One cycle is defined as `2π` radians no matter which direction phase is advancing (a clockwise path around a circle is the same length as a counter-clockwise path).
+# On a more practical level, I will show later on how you can shift the phases of complex samples to center an arbitrary frequency at the zero cycles/sample level.
+# So you can analyze a set of positive frequencies with some relationship to the physical world as a set of negative and positive frequencies centered around zero.
 #
-# The Anatomy of a (Complex) Wave
-# -------------------------------
+# In case the term "Nyquist" is unfamiliar: Harry Nyquist is credited for formalizing the limits of representing a continuous time signal as equally spaced samples of that signal.
+# The frequencies `-0.5` and `0.5` cycles/sample are called Nyquist frequencies because they are the first frequencies that we cannot unambiguously represent as discrete samples as we move outward from zero.
+# Imagine generating samples starting with a phase of `0` radians and either increasing or decreasing this phase by `π` radians (half a cycle) at each sample.
+# Both frequencies will visit the same set of discrete phases in lock step, yielding the exact same sample sequence.
+#
+# Similarly, frequencies beyond the Nyquist limits will always generate the same set of samples as a frequency within the `(-0.5, 0.5)` range.
+# As one more concrete example, consider the frequencies `-0.1` and `0.9` cycles/sample.
+# Why would a rate of `0.9 * 2π` radians/sample visit the same set of phases as `-0.1 * 2π` radians/sample?
+# Again, it is easiest to understand by relating this changing phase to a path around a circle.
+# Traveling most of the way around a circle in a counter-clockwise direction will always reach the same spot as traveling a proportionally smaller distance in a clockwise direction.
+# So `0.9 * 2π` radians may not be the same value as `-0.1 * 2π` radians, but when passed to the cosine or sine functions (which trace a circle when taken together as `(x, y)` pairs), both arguments will yield the same result.
+#
+# Background - Complex Numbers
+# ----------------------------
 #
 # How can complex samples represent a real-valued sinusoid?
 #
@@ -202,7 +218,7 @@ plt.close()
 #
 # With that background out of the way, we can get started on solving this example problem.
 # As a first step, we could pick a frequency and try to detect whether a wave at that frequency was summed into our signal.
-# The simplest frequency to reason about is `0` cycles/sample because its wave is just a sequence of one repeated sample:
+# The simplest frequency to reason about is zero cycles/sample because its wave is just a sequence of one repeated sample:
 
 phi = rng.uniform() # random phase offset
 zero_freq_wave = magnitudes * np.exp(1j * (2 * np.pi * 0 * t + phi))
@@ -212,22 +228,71 @@ assert np.allclose(zero_freq_wave, repeated_samples)
 # lit text
 #
 # When summed into another signal, this wave would simply shift each sample up or down by a constant.
-# This means that we can detect a wave at `0` cycles/sample in our signal by computing the signal's mean value.
+# This means that we can detect a zero-frequency wave in our signal by computing the signal's mean value.
 #
 
 # lit skip
 assert np.abs(np.mean(signal)) < 0.2, "did the rng seed change?"
 # lit unskip
 
-print(np.mean(signal))
+m = np.mean(signal)
+print(f'mean={m} mag={abs(m)}')
 
 # lit text
 #
-# In this case, the mean value our signal is near `0` in both the real and imaginary parts.
-# We would expect a larger mean value if one of our summed waves had a frequency of `0`.
+# In this case, the mean value of our signal is near `0` in both the real and imaginary parts.
 #
 # lit execute
 #
-# But wouldn't we also expect a mean value of _exactly_ `0` if none of our summed waves had a frequency of `0`.
-# In this case, all of our waves should be oscillating evenly around `0`.
+# If one of our waves was a constant, we would expect the mean value of the signal to reflect that sample and have a larger magnitude (all of our waves have a magnitude of `1`).
+# But then shouldn't we also expect a mean value of _exactly_ `0` if all of these waves have non-zero frequency?
 #
+# It is true that the expected value of every pure sinusoid with non-zero frequency is `0` and that the sum of those waves also has an expected value of `0`.
+# If we sampled a whole number of cycles from each wave, then we would get the result we expect.
+# But here we have collected an arbitrary number of samples from each wave without considering their frequencies.
+# Any partial cycle that we sampled will skew our mean statistic.
+# We may not have even collected a full cycle's worth of samples for a wave if its frequency is very close to, but not exactly zero.
+#
+# All this is to say that our mean detector for a zero-frequency wave is not perfect.
+# And we can characterize excactly how imperfect it is by running some quick tests.
+#
+
+# Divide wavelengths by multiple of window length
+tests = np.linspace(0, 0.5, nsamples * 5)
+# Test frequencies in (-0.5, 0.5)
+tests = np.concatenate((-tests[:-1][::-1], tests))
+# Compute mean value of each with a window of nsamples
+results = np.mean([np.exp(2j*np.pi*f*t) for f in tests], axis=-1)
+
+# lit skip
+plt.plot(tests, np.abs(results))
+plt.title(f'mean of {nsamples} samples')
+plt.xlabel('frequency')
+plt.ylabel('mag')
+plt.savefig('mean-detector.png')
+plt.close()
+
+# lit unskip
+# lit text
+# lit execute
+#
+# As expected, the zero-frequency wave has the largest mean value of `1`.
+# Let's zoom in on the middle frequencies.
+#
+# lit skip
+
+plt.plot(tests[len(tests)//2-50:len(tests)//2+50], np.abs(results[len(results)//2-50:len(results)//2+50]))
+plt.vlines([-1.0/nsamples, 1.0/nsamples], 0, 0.5, color='tab:green')
+plt.text(1.0/nsamples, 0.5, f'1/{nsamples}')
+plt.vlines([-2.0/nsamples, 2.0/nsamples], 0, 0.5, color='tab:red')
+plt.text(2.0/nsamples, 0.5, f'2/{nsamples}')
+plt.vlines([-3.0/nsamples, 3.0/nsamples], 0, 0.5, color='tab:brown')
+plt.text(3.0/nsamples, 0.5, f'3/{nsamples}')
+plt.title(f'mean of {nsamples} samples')
+plt.xlabel('frequency')
+plt.ylabel('mag')
+plt.savefig('mean-detector-zoomed.png')
+plt.close()
+
+# lit unskip
+# lit execute
