@@ -10,7 +10,7 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
-# A fair bit of signal processing background is covered along the way, including sampling, complex numbers and linear systems.
+# A fair bit of signal processing background is covered along the way, including sampling, complex numbers and linear time-invariant systems.
 #
 # Example Problem
 # ---------------
@@ -89,7 +89,7 @@ plt.close()
 # How can complex samples represent a real-valued sinusoid?
 #
 # As a quick review, complex numbers take the form `x + jy` where `x` is called the real part, `y` is called the imaginary part and `j*j = -1`.
-# If we plot the point `(x, y)` on a 2D plane, it is clear that `x + jy` can be alternately defined in terms of a magnitude `A` (measured from the origin) and a phase angle `θ` (measured from the positive horizontal axis).
+# If we plot the point `(x, y)` on a 2D plane, it is clear that `x + jy` can be alternately defined in terms of a amplitude `A` (measured from the origin) and a phase angle `θ` (measured from the positive horizontal axis).
 #
 
 # lit skip
@@ -150,13 +150,13 @@ assert np.isclose(x_p_jy, A * np.exp(1j * θ))
 # The following program further details the simple relationship between the two formats.
 #
 
-# Random phases and magnitudes
+# Random phases and amplitudes
 phases = rng.uniform(0, 2 * np.pi, nsamples)
-magnitudes = rng.uniform(-1, 1, nsamples)
+amplitudes = rng.uniform(-1, 1, nsamples)
 # Generate a cosine, sine and complex wave
-a = magnitudes * np.cos(phases)
-b = magnitudes * np.sin(phases)
-c = magnitudes * np.exp(1j * phases)
+a = amplitudes * np.cos(phases)
+b = amplitudes * np.sin(phases)
+c = amplitudes * np.exp(1j * phases)
 # Start with Euler's formula
 assert np.allclose(c, a + 1j * b)
 # Complex conjugate of both sides
@@ -221,8 +221,8 @@ plt.close()
 # The simplest frequency to reason about is zero cycles/sample because its wave is just a sequence of one repeated sample:
 
 phi = rng.uniform() # random phase offset
-zero_freq_wave = magnitudes * np.exp(1j * (2 * np.pi * 0 * t + phi))
-repeated_samples = magnitudes * np.exp(1j * phi)
+zero_freq_wave = amplitudes * np.exp(1j * (2 * np.pi * 0 * t + phi))
+repeated_samples = amplitudes * np.exp(1j * phi)
 assert np.allclose(zero_freq_wave, repeated_samples)
 
 # lit text
@@ -276,8 +276,35 @@ plt.close()
 # lit text
 # lit execute
 #
-# As expected, the zero-frequency wave has the largest mean value of `1`.
-# Let's zoom in on the middle frequencies.
+# You may wonder if these test results are directly applicable to our example problem.
+# Here I applied our detector to a pure sinusoid in each test.
+# In our example problem, I applied the detector to the sum of several pure sinusoids.
+# How do we characterize the behavior of our detector for near-zero-frequency waves when the input is more complicated like this?
+#
+# Background - Linear Time-Invariant (LTI) Systems
+# ------------------------------------------------
+#
+# Computing the mean value of a signal in blocks like this can be considered a linear time-invariant system if it meets the following conditions.
+#
+
+# Linear (scaling and adding inputs is the same as scaling and adding outputs)
+a = rng.uniform()
+b = rng.uniform(size=nsamples)
+c = rng.uniform()
+d = rng.uniform(size=nsamples)
+assert np.isclose(np.mean(a * b + c * d), a * np.mean(b) + c * np.mean(d))
+# Time Invariant (delaying the input just delays the same output)
+pass
+
+# lit execute
+# lit text
+#
+# I couldn't think of nice way to distill the time-invariance property down to a concrete example.
+#
+# Back to Step 1
+# --------------
+#
+# Let's zoom in on the middle frequencies of our test results for the mean value of pure sinusoids in a finite block of samples.
 #
 # lit skip
 
@@ -298,6 +325,7 @@ plt.close()
 # lit execute
 # lit text
 #
+# As expected, the zero-frequency wave has the largest mean value of `1`.
 # I've marked the first few frequencies in either direction that have a mean value of `0`.
 # Unsurprisingly, they are frequencies that complete a whole number of cycles (`1`, `2` or `3`) in the number of samples we collected.
 # Between these are frequencies that include a partial cycle within the sampled time range.
@@ -305,17 +333,49 @@ plt.close()
 # We see small peaks right in the middle of the zero-mean frequencies because the cosine and sine functions cross zero halfway through a cycle, so the last half of a cycle balances out the first half of the cycle.
 # The peaks are shorter as we move away from `0` because cycles are shorter (wavelength) as the absolute value of frequency increases.
 #
-# As mentioned above, frequencies very close to zero will not complete even one cycle.
-# These frequencies have relatively large mean values.
-# So our detector for the zero-frequency wave is actually a detector for near-zero-frequency waves.
+# Frequencies very close to zero will not come close to completing even a single cycle in this many samples.
+# These waves have a mean value close to `1`.
+# So our detector for the zero-frequency wave is actually more of a detector for near-zero-frequency waves.
+# We can squeeze this range of near-zero-frequency waves by analyzing more samples at once.
+
+# Collect more samples
+t2 = np.arange(nsamples * 2)
+# Divide wavelengths by multiple of window length
+tests = np.linspace(0, 0.5, nsamples * 2 * 5)
+# Test frequencies in (-0.5, 0.5)
+tests = np.concatenate((-tests[:-1][::-1], tests))
+# Compute mean value of each with a window of nsamples
+results = np.mean([np.exp(2j*np.pi*f*t2) for f in tests], axis=-1)
+
+# lit skip
+plt.plot(tests[len(tests)//2-50:len(tests)//2+50], np.abs(results[len(results)//2-50:len(results)//2+50]))
+plt.vlines([-1.0/nsamples/2, 1.0/nsamples/2], 0, 0.5, color='tab:green')
+plt.text(1.0/nsamples/2, 0.5, f'1/{nsamples*2}')
+plt.vlines([-2.0/nsamples/2, 2.0/nsamples/2], 0, 0.5, color='tab:red')
+plt.text(2.0/nsamples/2, 0.5, f'2/{nsamples*2}')
+plt.vlines([-3.0/nsamples/2, 3.0/nsamples/2], 0, 0.5, color='tab:brown')
+plt.text(3.0/nsamples/2, 0.5, f'3/{nsamples*2}')
+plt.title(f'mean of {nsamples*2} samples')
+plt.xlabel('frequency')
+plt.ylabel('mag')
+plt.savefig('mean-detector2-zoomed.png')
+plt.close()
+
+# lit unskip
+# lit execute
+# lit text
 #
-# You may wonder if these test results are directly applicable to our example problem.
-# Here I applied our detector to a pure sinusoid in each test.
-# In our example problem, I applied the detector to the sum of several pure sinusoids.
-# How do we characterize the behavior of our detector for near-zero-frequency waves when the input is more complicated?
+# The larger outputs in our tests are now associated with smaller frequencies, increasing this detector's ability to separate waves close to zero from other frequencies.
+# There is a tradeoff here though.
+# By increasing the frequency resolution of our detector, we have simultaneously decreased its time resolution: the first sample in our block is further separated from the last sample in time.
+# In practice, we may want to detect a zero-frequency wave that is not always "on".
+# When we detect it in a large block of samples, there is more ambiguity as to when it was active.
 #
-# Background - Linear Systems
-# ---------------------------
+# All things considered, we have a very decent detector for near-zero-frequency waves in our signal.
+# The magnitude of our signal's mean sample was close enough to zero that we can safely say that our waves have frequencies closer to one of the other labeled frequencies in this plot.
+# Our detector returns `0` for these frequencies (waves that complete a whole number of cycles within the analyzed block of samples) so let's pick one of these frequencies to detect next and see if we can generalize our approach.
 #
-# The magnitude of our mean sample was close enough to zero that we can safely say that our waves are closer to one of the other frequencies labeled in this plot.
+# Step 2
+# ------
+#
 #
