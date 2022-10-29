@@ -1,4 +1,4 @@
 
 # All Posts
 
-- [The Discrete Fourier Transform](/posts/dft)
+- [The Discrete Fourier Transform](/posts/dft/)

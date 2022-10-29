@@ -26,8 +26,8 @@ $(TARGET_DIR)/index.html: PAGE_DESCRIPTION = Technical articles by Ben Ogles foc
 $(TARGET_DIR)/posts/index.html: PAGE_TITLE = All Posts - Ben Ogles
 $(TARGET_DIR)/posts/index.html: PAGE_DESCRIPTION = List of all technical articles by Ben Ogles
 
-$(TARGET_DIR)/posts/dft/dft-as-filter-bank/index.html: PAGE_TITLE = DFT as a Filter Bank
-$(TARGET_DIR)/posts/dft/dft-as-filter-bank/index.html: PAGE_DESCRIPTION = Derivation of the discrete Fourier transform (DFT) as a bank of bandpass filters
-$(TARGET_DIR)/posts/dft/dft-as-filter-bank/index.html: PAGE_METAS += fragments/highlightcss.html
-$(TARGET_DIR)/posts/dft/dft-as-filter-bank/index.html: PAGE_FOOTERS += fragments/highlightjs.html
+$(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_TITLE = DFT as a Filter Bank
+$(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_DESCRIPTION = Derivation of the discrete Fourier transform (DFT) as a bank of bandpass filters
+$(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_METAS += fragments/highlightcss.html
+$(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_FOOTERS += fragments/highlightjs.html
 
