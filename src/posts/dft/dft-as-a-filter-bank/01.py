@@ -288,18 +288,19 @@ plt.close()
 #
 
 # Linear (scaling and adding inputs is the same as scaling and adding outputs)
-a = rng.uniform()
-b = rng.uniform(size=nsamples)
 c = rng.uniform()
-d = rng.uniform(size=nsamples)
-assert np.isclose(np.mean(a * b + c * d), a * np.mean(b) + c * np.mean(d))
-# Time Invariant (delaying the input just delays the same output)
-pass
+assert np.isclose(c * np.mean(signal), c * np.sum(np.mean(waves, axis=-1)))
+# Time-Invariant (delaying the input just delays the same output)
+# Our np.mean system is trivially time invariant
+# It does not even consider sample index in its computation
+# Here is an example of a time-invariant system
+system = lambda t, x: t * x
+assert not np.allclose(system(t, b), system(t-1, b))
 
 # lit execute
 # lit text
 #
-# I couldn't think of nice way to distill the time-invariance property down to a concrete example.
+# 
 #
 # Back to Step 1
 # --------------
