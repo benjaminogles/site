@@ -113,21 +113,17 @@ assert np.isclose((z - np.conj(z)) / 2j, y)
 # Why?
 # ----
 #
-# Hopefully it is clear now that complex numbers are a completely valid format for the samples of a real-valued sinusoidal signal in the sense that they are a vehicle for the same information.
+# Hopefully it is clear that complex numbers are a completely valid format for the samples of a real-valued sinusoidal signal.
 # But why would we prefer this format over real-valued samples in certain applications?
 #
-# I believe the primary motivation for choosing the complex sample format in many cases is to ease the implementation of communication systems.
-# Many communication systems are implemented by modulating the magnitude and phase of a pure sinusoid to carry user data.
-# Recovering this data from a received signal (demodulation) necessarily requires estimating its magnitude and phase at each sample.
-# As shown above, estimates of these signal parameters are easily recovered from complex samples.
+# The magnitude and phase of a complex sample can be considered an estimate of the continuous signal's magnitude and phase at that instant.
+# This information is of special interest when implementing communication systems that modulate the magnitude and phase of a pure sinusoid to carry user data.
 # It is not nearly as straight foward to estimate the instantaneous magnitude and phase of a signal from its real-valued samples.
 # Even estimating the constant magnitude and frequency of a pure sinusoid would require analyzing a block of real-valued samples by e.g. noting extreme values and counting zero-crossings.
 #
-
-
 # How?
 # ----
 #
-# How can we obtain complex samples from a real-valued analog signal?
-# There is more than one way to accomplish this task and it should be noted that a system designer may in fact choose to use complex-valued analog signals as well by allocating one channel each for the real and imaginary parts that are sent and received together.
+# How do we obtain complex samples from a real-valued signal?
 #
+
