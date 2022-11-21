@@ -60,7 +60,8 @@ plt.close()
 # The plot shows that sampling `b` at `fs` will yield the same sequence of values as sampling `a` when their frequencies are separated by any integer multiple of `fs`.
 #
 
-assert np.allclose(a_n, np.cos(2 * np.pi * f2 * nT))
+b_n = np.cos(2 * np.pi * f2 * nT)
+assert np.allclose(a_n, b_n)
 
 # lit execute
 # lit text
