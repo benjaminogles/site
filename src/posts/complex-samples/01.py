@@ -9,7 +9,7 @@ import matplotlib.patches as plt_patches
 # Complex Samples
 # ===============
 #
-# In this post I describe how complex numbers can be used to represent samples of a real-valued sinusoidal signal.
+# In this post, I describe how complex numbers can be used to represent samples of a real-valued sinusoidal signal.
 #
 # Basics
 # ------
