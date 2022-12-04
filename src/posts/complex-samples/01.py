@@ -153,13 +153,13 @@ assert np.isclose(x * l, A/2 * (d + s))
 # When tuning the radio, the local oscillator frequency is chosen so that one of the shifted frequencies always matches a known and fixed intermediate frequency.
 # Fixing an intermediate frequency makes it easier to design the rest of the hardware which will filter, amplify and then sample the shifted input signal.
 #
-# The example above used a real-valued local oscillator and would produce real-valued samples.
+# The example above used one local oscillator and would produce real-valued samples.
 # If we use two local oscillators, we can effect frequency translation by complex multiplication.
 #
 
 # Local oscillator for real part
 r = np.cos(2 * np.pi * lo * t)
-# Sum and difference images of
+# Sum and difference images
 rdiff = np.cos(2 * np.pi * (fc-lo) * t + θ)
 rsum = np.cos(2 * np.pi * (fc+lo) * t + θ)
 assert np.isclose(x * r, A/2 * (rdiff + rsum))
@@ -171,9 +171,10 @@ idiff = - np.sin(2 * np.pi * (fc-lo) * t + θ)
 isum = np.sin(2 * np.pi * (fc+lo) * t + θ)
 assert np.isclose(x * i, A/2 * (idiff + isum))
 
-# Conceptually, we get complex sum and difference components
+# Taken together, we get complex sum and difference components
 d = rdiff + 1j * idiff
 s = rsum + 1j * isum
+# Conceptually, this is complex multiplication in hardware
 assert np.isclose(x * (r + 1j * i), A/2 * (d + s))
 
 # lit execute
@@ -183,4 +184,3 @@ assert np.isclose(x * (r + 1j * i), A/2 * (d + s))
 # The local oscillators use the same frequency but are offset in phase by `90` degrees.
 # After the signals in the real and imaginary branches of hardware are filtered and amplified, their samples are interleaved as the real and imaginary parts of the signal's complex samples.
 #
-
