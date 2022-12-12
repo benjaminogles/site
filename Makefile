@@ -31,6 +31,11 @@ $(TARGET_DIR)/posts/complex-signals/index.html: PAGE_DESCRIPTION = How complex n
 $(TARGET_DIR)/posts/complex-signals/index.html: PAGE_METAS += fragments/highlightcss.html
 $(TARGET_DIR)/posts/complex-signals/index.html: PAGE_FOOTERS += fragments/highlightjs.html
 
+$(TARGET_DIR)/posts/nyquist-frequency/index.html: PAGE_TITLE = Nyquist Frequency
+$(TARGET_DIR)/posts/nyquist-frequency/index.html: PAGE_DESCRIPTION = Explaining the limits of representing a continuous signal by its discrete samples
+$(TARGET_DIR)/posts/nyquist-frequency/index.html: PAGE_METAS += fragments/highlightcss.html
+$(TARGET_DIR)/posts/nyquist-frequency/index.html: PAGE_FOOTERS += fragments/highlightjs.html
+
 $(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_TITLE = DFT as a Filter Bank
 $(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_DESCRIPTION = Derivation of the discrete Fourier transform (DFT) as a bank of bandpass filters
 $(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_METAS += fragments/highlightcss.html
