@@ -26,10 +26,10 @@ $(TARGET_DIR)/index.html: PAGE_DESCRIPTION = Technical articles by Ben Ogles foc
 $(TARGET_DIR)/posts/index.html: PAGE_TITLE = All Posts - Ben Ogles
 $(TARGET_DIR)/posts/index.html: PAGE_DESCRIPTION = List of all technical articles by Ben Ogles
 
-$(TARGET_DIR)/posts/complex-samples/index.html: PAGE_TITLE = Complex Samples
-$(TARGET_DIR)/posts/complex-samples/index.html: PAGE_DESCRIPTION = How complex numbers are used to represent real-valued sinusoidal signals
-$(TARGET_DIR)/posts/complex-samples/index.html: PAGE_METAS += fragments/highlightcss.html
-$(TARGET_DIR)/posts/complex-samples/index.html: PAGE_FOOTERS += fragments/highlightjs.html
+$(TARGET_DIR)/posts/complex-signals/index.html: PAGE_TITLE = Complex Signals
+$(TARGET_DIR)/posts/complex-signals/index.html: PAGE_DESCRIPTION = How complex numbers are used in signal processing
+$(TARGET_DIR)/posts/complex-signals/index.html: PAGE_METAS += fragments/highlightcss.html
+$(TARGET_DIR)/posts/complex-signals/index.html: PAGE_FOOTERS += fragments/highlightjs.html
 
 $(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_TITLE = DFT as a Filter Bank
 $(TARGET_DIR)/posts/dft/dft-as-a-filter-bank/index.html: PAGE_DESCRIPTION = Derivation of the discrete Fourier transform (DFT) as a bank of bandpass filters
