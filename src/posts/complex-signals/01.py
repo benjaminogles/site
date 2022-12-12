@@ -202,10 +202,10 @@ rsum = np.cos(2 * np.pi * (fc+lo) * t + θ)
 assert np.isclose(v * r, A/2 * (rdiff + rsum))
 
 # Local oscillator for imaginary part
-i = np.sin(2 * np.pi * lo * t)
+i = - np.sin(2 * np.pi * lo * t)
 # Sum and difference images
-idiff = - np.sin(2 * np.pi * (fc-lo) * t + θ)
-isum = np.sin(2 * np.pi * (fc+lo) * t + θ)
+idiff = np.sin(2 * np.pi * (fc-lo) * t + θ)
+isum = - np.sin(2 * np.pi * (fc+lo) * t + θ)
 assert np.isclose(v * i, A/2 * (idiff + isum))
 
 # Taken together, we get complex sum and difference components
