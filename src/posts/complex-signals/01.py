@@ -9,6 +9,8 @@ import matplotlib.patches as plt_patches
 # Complex Signals
 # ===============
 #
+# **Publish Date: 2022/12/12**
+#
 # In this post, I describe how complex numbers can be used to represent real-valued signals of the form `A(t) * cos(θ(t))` where `A(t)` and `θ(t)` are arbitrary real-valued functions of `t` (e.g. time).
 # The choice of cosine over sine is completely arbitrary and makes no difference in the details of this post since the two functions are simply shifted copies of each other (we can always write sine in terms of cosine).
 # The interesting information resides in the functions `A(t)` and `θ(t)` which respectively provide the instantaneous magnitude and phase of the signal.
