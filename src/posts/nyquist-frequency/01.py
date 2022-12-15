@@ -4,11 +4,11 @@
 # Nyquist Frequency
 # =================
 #
-# **Published Date: 2022/12/12**
+# **Published: 2022/12/15**
 #
 # In this post, I describe the limits of representing a continuous signal by its discrete samples.
 # Such a representation is only useful if it is unique and reversible i.e. if we can interpolate the samples to get back to a good approximation of the original continuous signal.
-# This becomes impossible when the continuous signal contains high frequency oscillations between any two samples.
+# This becomes impossible when the continuous signal contains high frequency oscillations between samples.
 # The following program shows an example of this problem using pure sinusoidal signals.
 #
 
@@ -63,9 +63,7 @@ assert np.allclose(a_n, b_n)
 # lit execute
 # lit text
 #
-# This is because the higher frequency oscillations in `b` are completely missed by the lower rate sampling process.
-# In general, the samples of a sinusoidal signal ambiguously represent an infinite family of sinusoidal signals separated by integer multiples of the sampling rate.
-# This really boils down to the trigonometric identity `cos(x) == cos(x + 2πk)` for any value of `k`.
+# This boils down to the trigonometric identity `cos(x) == cos(x + 2πk)` for any value of `k`.
 #
 
 # Expand definition of f2
@@ -74,20 +72,15 @@ assert np.allclose(b_n, np.cos(2 * np.pi * (f1 + k * fs) * nT))
 assert np.allclose(b_n, np.cos(2*np.pi*f1*nT + 2*np.pi*k*fs*nT))
 # Simplify due to fs = 1/T
 assert np.allclose(b_n, np.cos(2*np.pi*f1*nT + 2*np.pi*k*n))
-# Phase shifts of 2πkn just wrap around the unit circle
-# and do not affect the output of cos
+# Phase offsets of 2πkn just wrap around the unit circle
 assert np.allclose(b_n, np.cos(2*np.pi*f1*nT))
 
 # lit execute
 # lit text
 #
-# In order to avoid this problem, the sampling rate must exceed the difference between the lowest and highest frequency oscillations in the continuous signal.
-# In other words, a sequence of samples can unambiguously represent continuous signals with frequency content limited to the range of `(-fs/2, fs/2)` shifted to any start frequency.
-# This means that our sampling rate must be twice as fast as the highest frequency oscillations we need to detect in the sampled signal so that we get more than two samples, on average, in every cycle.
-# The limiting frequencies `-fs/2` and `fs/2` are called Nyquist frequencies, named after the scientist Harry Nyquist.
-#
-# Note that our sampling rate does not necessarily need to be twice as fast as the highest frequency oscillations contained in the continuous signal.
-# It only needs to exceed the full range of frequency oscillations (bandwidth) contained in that signal.
-# For example, if we didn't need to distinguish between the signal's `a` and `b` (e.g. because we only cared about higher frequency signals), we could sample `b` at the lower rate without any problem.
-# This is called bandpass sampling.
+# This means that the samples of the signal `a` ambiguously represent an infinite family of other continuous sinusoidal signals with frequencies equal to `f1 + k * fs` for any integer `k`.
+# The only way to work around this ambiguity is to limit the bandwidth of the continuous signal (the range of frequencies it contains) before sampling so that no two frequencies represented in the continuous signal are separated by an integer multiple of `fs`.
+# Typically, we limit the bandwidth of the continuous signal to `(-fs/2, fs/2)` before sampling.
+# The limiting frequencies `-fs/2` and `fs/2` are called Nyquist frequencies, named after the scientist Harry Nyquist who helped formalize a lot of this theory.
+# This brings us full circle to the intuitive idea that our sampling process must adequately capture high frequency oscillations i.e. we need more than two samples, on average, in each cycle of any frequency contained in the continuous signal.
 #
