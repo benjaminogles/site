@@ -83,6 +83,11 @@ assert np.allclose(b_n, np.cos(2*np.pi*f1*nT))
 #
 # In order to avoid this problem, the sampling rate must exceed the difference between the lowest and highest frequency oscillations in the continuous signal.
 # In other words, a sequence of samples can unambiguously represent continuous signals with frequency content limited to the range of `(-fs/2, fs/2)` shifted to any start frequency.
-# This means our sampling rate is twice as large as the highest frequency we need to detect giving us more than a single sample on average in each peak and valley of those oscillations.
+# This means that our sampling rate must be twice as fast as the highest frequency oscillations we need to detect in the sampled signal so that we get more than two samples, on average, in every cycle.
 # The limiting frequencies `-fs/2` and `fs/2` are called Nyquist frequencies, named after the scientist Harry Nyquist.
+#
+# Note that our sampling rate does not necessarily need to be twice as fast as the highest frequency oscillations contained in the continuous signal.
+# It only needs to exceed the full range of frequency oscillations (bandwidth) contained in that signal.
+# For example, if we didn't need to distinguish between the signal's `a` and `b` (e.g. because we only cared about higher frequency signals), we could sample `b` at the lower rate without any problem.
+# This is called bandpass sampling.
 #
