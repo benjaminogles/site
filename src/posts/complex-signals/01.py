@@ -2,6 +2,7 @@
 # lit skip
 import matplotlib.pyplot as plt
 import matplotlib.patches as plt_patches
+import numpy as np
 
 # lit unskip
 # lit text
@@ -9,52 +10,39 @@ import matplotlib.patches as plt_patches
 # Complex Signals
 # ===============
 #
-# **Publish Date: 2022/12/12**
+# **Published: 2022/12/15**
 #
-# In this post, I describe how complex numbers can be used to represent real-valued signals of the form `A(t) * cos(θ(t))` where `A(t)` and `θ(t)` are arbitrary real-valued functions of `t` (e.g. time).
-# The choice of cosine over sine is completely arbitrary and makes no difference in the details of this post since the two functions are simply shifted copies of each other (we can always write sine in terms of cosine).
-# The interesting information resides in the functions `A(t)` and `θ(t)` which respectively provide the instantaneous magnitude and phase of the signal.
-#
-# Given the magnitude and phase of a signal at a particular instant, we can always compute the cosine or sine sample value.
-# It is not nearly as straightforward a task to go the other way and compute a particular real-valued sample's magnitude and phase.
-# In fact, one of the main advantages of complex numbers in this context is that they _do_ provide a very straightforward representation of instantaneous magnitude and phase.
-#
-# Throughout this post, we will consider a single random sample of a signal with the form `A(t) * cos(θ(t))` to understand how it can be represented by a complex number.
-#
-
-# Seed random number generator
-import numpy as np
-rng = np.random.default_rng(seed=1234)
-# Generate a random magnitude and phase
-A = rng.uniform(0.5, 2)
-θ = rng.uniform(0, 2 * np.pi)
-
-# lit text
+# In this post, I briefly define complex numbers and describe how they are used in many signal processing applications.
 #
 # Basics
 # ------
 #
-# Complex numbers have the form `x + jy` where `x` is called the real part, `y` is called the imaginary part and `j*j = -1`.
-# They can be plotted on a 2D plane with `x` on the horizontal (real) axis and `y` on the vertical (imaginary) axis.
-# If we draw a line from the origin to any point representing a complex number, it is clear that `x + jy` can also be defined in terms of a magnitude (measured from the origin) and a phase angle (measured from the positive real axis).
+# Complex numbers have the form `x + jy` where `x` and `y` are real numbers and `j` is the imaginary unit: `j*j = -1`.
+# We call `x` the real part and `y` the imaginary part of the number.
 #
-# This means that we can plot `A` and `θ` on a 2D plane to find the complex number representation of our sample with just a bit of trigonometry.
+
+x = 1
+y = 1
+x_p_jy = x + 1j * y
+
+# lit text
+#
+# If we plot the point `(x, y)` on a 2D plane it is clear that complex numbers are equally well defined in terms of a magnitude, measured from the origin, and a phase angle, measured from the positive horizontal axis.
 #
 
 # lit skip
-x = A * np.cos(θ)
-y = A * np.sin(θ)
+θ = np.arctan2(y, x)
 diameter = min(abs(x), abs(y))/2
 plt.scatter([x], [y])
 plt.text(x+.05, y+.05, '$(x, y)$')
 plt.plot([0, x], [0, y])
-plt.text(x/2, y/2+0.1, '$A$')
+plt.text(x/3.5, y/2+0.1, '$\\sqrt{x^2 + y^2}$')
 plt.gca().add_patch(plt_patches.Arc([0,0], diameter, diameter, angle=0, theta1=0, theta2=np.degrees(θ)))
-plt.text(diameter/2 * np.cos(θ/2), diameter/2 * np.sin(θ/2) + 0.1, '$\\theta$')
+plt.text(diameter/2 * np.cos(θ/2) + 0.02, diameter/2 * np.sin(θ/2), '$tan^{-1}(\\frac{y}{x})$')
 plt.plot([0, x], [0, 0])
-plt.text(x/1.5, -0.2, '$A * cos(\\theta)$')
+plt.text(x/2, -0.15, '$x$')
 plt.plot([x, x], [0, y])
-plt.text(x-0.5, y/2-0.1, '$A * sin(\\theta)$')
+plt.text(x+0.05, y/2-0.05, '$y$')
 plt.xlim(-abs(x)-0.25, abs(x)+0.25)
 plt.ylim(-abs(y)-0.25, abs(y)+0.25)
 plt.xticks([])
@@ -63,43 +51,112 @@ plt.gca().spines['left'].set_position('center')
 plt.gca().spines['top'].set_position('center')
 plt.gca().spines['right'].set_color('none')
 plt.gca().spines['bottom'].set_color('none')
-plt.title('a complex sample')
-plt.savefig('complex-sample.png')
+plt.title('a complex number')
+plt.savefig('complex-number-1.png')
 plt.close()
 
 # lit unskip
 # lit execute
 # lit text
 #
-# As shown in the plot, the real and imaginary parts of the complex number representation have simple definitions in terms of `A` and `θ`.
-#
-
-x = A * np.cos(θ)
-y = A * np.sin(θ)
-x_p_jy = x + 1j * y
-
-# lit text
-#
-# And as mentioned above, the magnitude and phase of this sample are easily recovered from the complex number representation.
+# As indicated in the plot, the magnitude and phase of a complex number can be computed from its real and imaginary parts using just a bit of basic trigonometry.
 #
 
 # Compute A and θ from their definitions
-assert np.isclose(np.sqrt(x**2 + y**2), A)
-assert np.isclose(np.arctan2(y, x), θ)
-# Also verify against library functions
-assert np.isclose(np.abs(x_p_jy), A)
-assert np.isclose(np.angle(x_p_jy), θ)
+import numpy as np
+A = np.sqrt(x**2 + y**2)
+θ = np.arctan2(y, x)
+# Verify against library functions
+assert np.isclose(A, np.abs(x_p_jy))
+assert np.isclose(θ, np.angle(x_p_jy))
 
 # lit execute
 # lit text
 #
+# We can also go the other way and compute `x` and `y` from `A` and `θ`.
+# These are completely interchangeable representations of the same complex number.
+# Here is the plot of `(x, y)` again but labeled to show the definitions of `x` and `y` in terms of `A` and `θ`.
+#
+
+# lit skip
+θ = np.arctan2(y, x)
+diameter = min(abs(x), abs(y))/2
+plt.scatter([x], [y])
+plt.text(x+.05, y+.05, '$(x, y)$')
+plt.plot([0, x], [0, y])
+plt.text(x/2.5, y/2+0.1, '$A$')
+plt.gca().add_patch(plt_patches.Arc([0,0], diameter, diameter, angle=0, theta1=0, theta2=np.degrees(θ)))
+plt.text(diameter/2 * np.cos(θ/2) + 0.02, diameter/2 * np.sin(θ/2), '$\\theta$')
+plt.plot([0, x], [0, 0])
+plt.text(x/2, -0.15, '$Acos(\\theta)$')
+plt.plot([x, x], [0, y])
+plt.text(x+0.05, y/2-0.05, '$Asin(\\theta)$')
+plt.xlim(-abs(x)-0.25, abs(x)+0.25)
+plt.ylim(-abs(y)-0.25, abs(y)+0.25)
+plt.xticks([])
+plt.yticks([])
+plt.gca().spines['left'].set_position('center')
+plt.gca().spines['top'].set_position('center')
+plt.gca().spines['right'].set_color('none')
+plt.gca().spines['bottom'].set_color('none')
+plt.title('a complex number')
+plt.savefig('complex-number-2.png')
+plt.close()
+
+# lit unskip
+# lit execute
+
+assert np.isclose(x, A * np.cos(θ))
+assert np.isclose(y, A * np.sin(θ))
+
+# lit execute
+# lit text
+#
+# Relationship to Signals
+# -----------------------
+#
+# In many signal processing applications, we need to analyze signals of the form `x(t) = A(t) * cos(θ(t))` where `A(t)` and `θ(t)` are arbitrary real-valued functions of `t` (e.g. time).
+# It is immediately apparent that we can represent this signal with complex numbers.
+#
+
+# Suppose A(t) = 1 for some t
+A = 1
+# Suppose θ(t) = 3π/4 for some t
+θ = 3 * np.pi / 4
+# Real-valued cosine sample
+x = A * np.cos(θ)
+# Real-valued sine sample
+y = A * np.sin(θ)
+# Complex sample
+x_p_jy = x + 1j * y
+# We can recover A(t)
+assert np.isclose(np.abs(x_p_jy), A)
+# We can recover θ(t)
+assert np.isclose(np.angle(x_p_jy), θ)
+# We can recover x(t)
+assert np.isclose(np.real(x_p_jy), x)
+# The complex sample has all we need
+
+# lit execute
+# lit text
+#
+# Why?
+# ----
+#
+# In many applications, all of the important information resides in `A(t)` and `θ(t)` rather than `x(t)` itself.
+# In these cases, we need a way to quickly and accurately recover `A(t)` and `θ(t)` from `x(t)`.
+# This is done by computing `y(t) = A(t) * sin(θ(t))` and computing `A(t)` and `θ(t)` from the complex-valued signal `x(t) + j * y(t)`.
+#
+# I will cover methods of computing `y(t)` from `x(t)` when `A(t)` and `θ(t)` are unknown in another post.
+#
 # Euler's Formula
 # ---------------
 #
-# Rather than writing `x + jy`, it is often convenient to write complex numbers explicitly in terms of `A` and `θ` by way of the exponential function.
+# Rather than writing `x + jy`, it is often convenient to write complex numbers explicitly in terms of `A` and `θ` with the exponential function.
 #
 
-assert np.isclose(x_p_jy, A * np.exp(1j * θ))
+z = A * np.exp(1j * θ)
+assert np.isclose(x_p_jy, z)
 
 # lit execute
 # lit text
@@ -108,8 +165,6 @@ assert np.isclose(x_p_jy, A * np.exp(1j * θ))
 # The following snippet further details the relationship between the expressions `x + jy` and `A * exp(jθ)` in this example.
 #
 
-# Generate real and complex samples from A and θ
-z = A * np.exp(1j * θ)
 # Start with Euler's formula
 assert np.isclose(z, x + 1j * y)
 # Complex conjugate of both sides
@@ -118,34 +173,35 @@ assert np.isclose(np.conj(z), x - 1j * y)
 assert np.isclose(z + np.conj(z), 2 * x)
 # Solve for the cosine term
 assert np.isclose((z + np.conj(z)) / 2,  x)
-# Subtracting the two equations instead allows solving for sine
-assert np.isclose((z - np.conj(z)) / 2j, y)
+# Solve for the sine term
+assert np.isclose((z - np.conj(z)) / 2j,  y)
 
 # lit execute
 # lit text
 #
-# This gives us another insight into why we can easily represent signals of the form `A(t) * cos(θ(t))` or `A(t) * sin(θ(t))` with complex numbers.
-# Here, `x` and `y` have that form exactly and we can see that they are equal to the complex number `z` combined with its own complex conjugate.
-# The conjugate term is completely redundant so we can simply drop it and reason about `z` alone.
+# This shows that the signals `x(t) = A(t) * cos(θ(t))` and `y(t) = A(t) * sin(θ(t))` are composed of complex-valued signals in conjugate pairs.
+# Converting a real-valued signal to a complex-valued signal is just a matter of removing the redundant conjugate term.
+# When we add `x(t)` to `j * y(t)`, the redundant conjugate terms cancel out and we are left with `z(t) = A(t) * exp(j * θ(t))`.
 #
 # Generalizing
 # ------------
 #
-# So far, we have discussed signals with the simple form `A(t) * cos(θ(t))`.
-# We may also want to analyze the sum of many such signals.
-# Luckily, the sum of any two signals in this form can also be expressed in the same way.
+# So far, we have only discussed signals of the simple form `A(t) * cos(θ(t))`.
+# What if we are working with a sum of many such signals?
+# Luckily, a sum of these signals takes on the exact same form.
 #
 
-# Another random sample from some other signal
-B = rng.uniform(0.5, 2)
-ϕ = rng.uniform(0, 2 * np.pi)
-# Real-valued representation
-u = B * np.cos(ϕ)
-# Complex-valued representation
+# B(t) = 2 for some t
+B = 2
+# ϕ(t) = π/2 for some t
+ϕ = np.pi / 2
+# Real-valued sample
+r = B * np.cos(ϕ)
+# Complex-valued sample
 w = B * np.exp(1j * ϕ)
 # Real-valued sample of the summed signal
-s = x + u
-# Unpack definitions of x and u in terms of w and z
+s = x + r
+# Unpack definitions of x and r in terms of w and z
 assert np.isclose(s, (z + np.conj(z) + w + np.conj(w)) / 2)
 # Rearrange; s is composed of a complex number and its conjugate
 assert np.isclose(s, (z+w + np.conj(z+w)) / 2)
@@ -157,67 +213,3 @@ assert np.isclose(s, np.abs(z+w) * np.cos(np.angle(z+w)))
 #
 # So everything in this post also applies to arbitrary sums of signals in this form.
 #
-# Converting from Real to Complex
-# -------------------------------
-#
-# How do we convert a real-valued signal to complex if we don't know `A(t)` and `θ(t)`?
-# There is actually more than one way to do this but it is often built into the frequency translation process of radio hardware.
-# The basic idea of frequency translation in a radio is to multiply an input signal with a pure sinusoid generated by a local oscillator (LO).
-#
-
-# Arbitrary carrier frequency
-fc = rng.uniform(3e6, 30e6)
-# Arbitrary LO frequency
-lo = rng.uniform(3e6, 30e6)
-# Arbitrary point in time
-t = rng.uniform(0, 1e-3)
-# Input signal value (we are interested in A and θ)
-v = A * np.cos(2 * np.pi * fc * t + θ)
-# LO signal value
-l = np.cos(2 * np.pi * lo * t)
-# Difference frequency component
-d = np.cos(2 * np.pi * (fc-lo) * t + θ)
-# Sum frequency component
-s = np.cos(2 * np.pi * (fc+lo) * t + θ)
-# Product to sum identity
-assert np.isclose(v * l, A/2 * (d + s))
-
-# lit execute
-# lit text
-#
-# The multiplication results in copies of the input signal at two shifted frequencies.
-# When tuning the radio, the local oscillator frequency is chosen so that one of the shifted frequencies always matches a known and fixed intermediate frequency.
-# Fixing an intermediate frequency makes it easier to design the rest of the hardware which will filter, amplify and then sample the shifted input signal.
-#
-# There may be multiple stages of frequency translation and the complex conversion can be done before or after sampling.
-# The example above used one local oscillator and would produce real-valued samples.
-# If we use two local oscillators, we can effect frequency translation by complex multiplication.
-#
-
-# Local oscillator for real part
-r = np.cos(2 * np.pi * lo * t)
-# Sum and difference images
-rdiff = np.cos(2 * np.pi * (fc-lo) * t + θ)
-rsum = np.cos(2 * np.pi * (fc+lo) * t + θ)
-assert np.isclose(v * r, A/2 * (rdiff + rsum))
-
-# Local oscillator for imaginary part
-i = - np.sin(2 * np.pi * lo * t)
-# Sum and difference images
-idiff = np.sin(2 * np.pi * (fc-lo) * t + θ)
-isum = - np.sin(2 * np.pi * (fc+lo) * t + θ)
-assert np.isclose(v * i, A/2 * (idiff + isum))
-
-# Taken together, we get complex sum and difference components
-d = rdiff + 1j * idiff
-s = rsum + 1j * isum
-# Conceptually, this is complex multiplication
-assert np.isclose(v * (r + 1j * i), A/2 * (d + s))
-
-# lit execute
-# lit text
-#
-# Note that this process does not require special hardware, it just requires two branches of hardware to handle the real and imaginary parts.
-# The local oscillators use the same frequency but are offset in phase by `90` degrees.
-# After the signals in the real and imaginary branches of hardware are filtered and amplified, their samples are interleaved as the real and imaginary parts of the signal's complex samples.
-# 
