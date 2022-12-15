@@ -1,0 +1,21 @@
+
+- DSP
+  - DFT
+    - As filter bank
+    - As change of basis
+    - As eigenbasis (diagonalization of circulant matrices)
+    - Properties
+  - FFT
+  - Bandpass sampling
+  - FIR filtering
+  - Halfband filter
+  - Real to complex conversion
+      - Efficient real-to-complex conversion with halfband filter
+      - Quadrature sampling
+      - Hilbert transform
+  - Overlap-Add convolution
+  - Weighted-Overlap-Add transmultiplexer
+  - Resampling with FFTs
+
+- Software Engineering
+  - How thread sanitizer works
