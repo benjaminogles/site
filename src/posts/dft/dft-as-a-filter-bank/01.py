@@ -10,12 +10,10 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
-# These other short posts may be helpful as prerequisites:
+# I have tried to cover background information as needed here but it may also be helpful to read these other posts first:
 #
-# - [Complex Signals](/posts/complex-signals/)
-# - [Nyquist Frequency](/posts/nyquist-frequency/)
-#
-# You shouldn't need any 
+# - [Complex Signals](/posts/complex-signals/), to understand complex numbers and their relationship to sinusoidal signals
+# - [Nyquist Frequency](/posts/nyquist-frequency/), to understand the basics of sampling
 #
 # Example Problem
 # ---------------
@@ -58,8 +56,8 @@ plt.close()
 # lit execute
 # lit text
 #
-# Note that we could scale `t` and `freqs` by a sample rate to get physical units (e.g seconds and Hertz) that might be applicable to any given application.
-# To keep things general, we are using a normalized sample rate of `1`.
+# Note that we could scale `t` and `freqs` by a sample rate to express the problem in physical units (e.g seconds and Hertz).
+# But to keep things more general, I have chosen to use a normalized sample rate of `1`.
 #
 # Step 1
 # ------
@@ -75,7 +73,7 @@ low_freqs = [0, 0.0001, 0.001, 0.01]
 phi = rng.uniform(0, 2 * np.pi)
 # Show more samples
 t2 = np.arange(512)
-# Show real part only since sine would be similar
+# Plot real part to demonstrate
 low_freq_waves = [np.cos(2 * np.pi * f * t2 + phi) for f in low_freqs]
 
 # lit skip
@@ -93,8 +91,7 @@ plt.close()
 # lit text
 #
 # The level of a lower frequency wave does not change much from sample to sample because, by definition, its phase is not changing much.
-# Adding a low frequency wave to another signal will effect an almost constant shift to that signal within a finite window.
-# Even if the phase offset in that window results in a cosine value of `0` (in the real part of the complex sample), the same phase offset will result in a sine value of `1` (in the imaginary part).
+# Adding a low frequency wave to another signal will simply shift that signal up or down by an almost constant amount when considering any short window of samples.
 #
 
 # lit skip
