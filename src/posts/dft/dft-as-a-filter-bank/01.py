@@ -10,12 +10,17 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
-# A fair bit of signal processing background is covered along the way, including sampling, complex numbers and linear time-invariant systems.
+# These other short posts may be helpful as prerequisites:
+#
+# - [Complex Signals](/posts/complex-signals/)
+# - [Nyquist Frequency](/posts/nyquist-frequency/)
+#
+# You shouldn't need any 
 #
 # Example Problem
 # ---------------
 #
-# We will generate several arrays of complex samples, each one representing a pure sinusoid oscillating at a unique, constant frequency.
+# We will generate several arrays of complex samples, each one representing a pure sinusoid with constant magnitude oscillating at a unique, constant frequency.
 # We will then combine these arrays by adding aligned samples together.
 # Our task will be to estimate the individual frequency of each wave by analyzing the combined signal.
 #
@@ -50,185 +55,46 @@ plt.savefig('signal.png')
 plt.close()
 
 # lit unskip
-# lit text
-#
-# This is what the real and imaginary parts of our signal look like.
-#
-# lit execute
-#
-# Background - Sampling
-# ---------------------
-#
-# If you are used to frequency in Hertz, note that I've simply factored out physical units by setting our sample spacing equal to 1 so that sample index can be used as a proxy for e.g. time.
-# In an actual application, you could scale our normalized frequency (cycles/sample) by the sampling rate (samples/second) to get back to Hertz (cycles/second).
-#
-# I have biased the generation of the example problem towards middle frequencies because more samples per cycle makes some of the plots look nicer.
-# Per Nyquist, the actual bounds in frequency that our complex samples can accurately represent is `(-0.5, 0.5)`.
-#
-# The notion of negative frequency may be confusing.
-# As the derivative of phase, frequency is negative when phase (`2πft` above) is decreasing sample to sample.
-# One cycle is defined as `2π` radians no matter which direction phase is advancing (a clockwise path around a circle is the same length as a counter-clockwise path).
-# On a more practical level, I will show later on how you can shift the phases of complex samples to center an arbitrary frequency at the zero cycles/sample level.
-# So you can analyze a set of positive frequencies with some relationship to the physical world as a set of negative and positive frequencies centered around zero.
-#
-# In case the term "Nyquist" is unfamiliar: Harry Nyquist is credited for formalizing the limits of representing a continuous time signal as equally spaced samples of that signal.
-# The frequencies `-0.5` and `0.5` cycles/sample are called Nyquist frequencies because they are the first frequencies that we cannot unambiguously represent as discrete samples as we move outward from zero.
-# Imagine generating samples starting with a phase of `0` radians and either increasing or decreasing this phase by `π` radians (half a cycle) at each sample.
-# Both frequencies will visit the same set of discrete phases in lock step, yielding the exact same sample sequence.
-#
-# Similarly, frequencies beyond the Nyquist limits will always generate the same set of samples as a frequency within the `(-0.5, 0.5)` range.
-# As one more concrete example, consider the frequencies `-0.1` and `0.9` cycles/sample.
-# Why would a rate of `0.9 * 2π` radians/sample visit the same set of phases as `-0.1 * 2π` radians/sample?
-# Again, it is easiest to understand by relating this changing phase to a path around a circle.
-# Traveling most of the way around a circle in a counter-clockwise direction will always reach the same spot as traveling a proportionally smaller distance in a clockwise direction.
-# So `0.9 * 2π` radians may not be the same value as `-0.1 * 2π` radians, but when passed to the cosine or sine functions (which trace a circle when taken together as `(x, y)` pairs), both arguments will yield the same result.
-#
-# Background - Complex Numbers
-# ----------------------------
-#
-# How can complex samples represent a real-valued sinusoid?
-#
-# As a quick review, complex numbers take the form `x + jy` where `x` is called the real part, `y` is called the imaginary part and `j*j = -1`.
-# If we plot the point `(x, y)` on a 2D plane, it is clear that `x + jy` can be alternately defined in terms of a amplitude `A` (measured from the origin) and a phase angle `θ` (measured from the positive horizontal axis).
-#
-
-# lit skip
-x, y = 1, 1
-plt.scatter([x], [y])
-plt.text(x+.05, y+.05, '$(x, y)$')
-plt.plot([0, 1], [0, 1])
-plt.text(0.5, 0.6, '$A$')
-plt.gca().add_patch(plt_patches.Arc([0,0], 0.5, 0.5, 0, 0, 45))
-plt.text(0.25, 0.1, '$\\theta$')
-plt.xlim(-1.25, 1.25)
-plt.ylim(-1.25, 1.25)
-plt.xticks([])
-plt.yticks([])
-plt.gca().spines['left'].set_position('center')
-plt.gca().spines['top'].set_position('center')
-plt.gca().spines['right'].set_color('none')
-plt.gca().spines['bottom'].set_color('none')
-plt.title('a complex number')
-plt.savefig('complex-number.png')
-plt.close()
-
-# lit unskip
 # lit execute
 # lit text
 #
-# The values of `A` and `θ` are also easily computed from `x` and `y` using basic trigonometry.
-#
-
-# Generate x + jy with random x and y
-x_p_jy = rng.uniform() + 1j * rng.uniform()
-# Compute A and θ from their definitions
-A = np.sqrt(np.real(x_p_jy)**2 + np.imag(x_p_jy)**2)
-θ = np.arctan2(np.imag(x_p_jy), np.real(x_p_jy))
-# Verify against library functions
-assert np.isclose(A, np.abs(x_p_jy))
-assert np.isclose(θ, np.angle(x_p_jy))
-
-# lit execute
-# lit text
-#
-# We can construct `x + jy` in terms of `A` and `θ` explicitly using the exponential function.
-#
-
-assert np.isclose(x_p_jy, A * np.exp(1j * θ))
-
-# lit execute
-# lit text
-#
-# Raising the number `e` to a power with an imaginary exponent is a bit weird but the result is straightforward: a unit magnitude complex number with the phase provided in the exponent (which we then scale by `A`).
-# This is how we generated the samples for our example problem.
-# A constant frequency in cycles per sample was converted to radians per sample and multiplied by each sample index to arrive at phase in radians.
-#
-# We could have generated real-valued samples by passing these phases to the cosine or sine functions instead of the exponential function.
-# But those samples would not have directly encoded the phases and magnitude of the wave at each sampling instant the way complex samples do.
-#
-# Complex exponentials are more than just a convenient proxy for their real-valued counterparts though.
-# The following program further details the simple relationship between the two formats.
-#
-
-# Random phases and amplitudes
-phases = rng.uniform(0, 2 * np.pi, nsamples)
-amplitudes = rng.uniform(-1, 1, nsamples)
-# Generate a cosine, sine and complex wave
-a = amplitudes * np.cos(phases)
-b = amplitudes * np.sin(phases)
-c = amplitudes * np.exp(1j * phases)
-# Start with Euler's formula
-assert np.allclose(c, a + 1j * b)
-# Complex conjugate of both sides
-assert np.allclose(c.conj(), a - 1j * b)
-# Add this equation to the one above it
-assert np.allclose(c + c.conj(), 2 * a)
-# Solve for the cosine wave expression
-assert np.allclose((c + c.conj()) / 2,  a)
-# Subtracting the two equations instead allows solving for sine
-assert np.allclose((c - c.conj()) / 2j, b)
-# If we got here, every test passed
-print('Assertions passed')
-
-# lit text
-#
-# We might as well run this to check that I wrote everything down correctly.
-#
-# lit execute
-#
-# So we can see that sine and cosine waves are composed of a complex exponential combined with its own conjugate.
-# This combination cancels the imaginary part of the complex wave, leaving the real sine or cosine.
-# The information in the complex conjugate term is completely redundant (just a difference in sign on the imaginary part) so we can safely discard it.
-# The remaining complex exponential gives us a direct view into the magnitudes of each sample, the phases of each sample and even the cosine (real part) and sine (imaginary part) of those magnitudes and phases.
-#
-# Back to the Example Problem
-# ---------------------------
-#
-# Before we start attempting to solve the problem, I want to give some more context as to why it is a useful example.
-# We'll see that the structure of the problem is obviously useful for introducing the DFT.
-# But it is not contrived solely for this purpose.
-# It is also closely related to practical application.
-#
-# Pure sinusoids can be modulated and transmitted with radio hardware to implement wireless communication systems.
-# Multiple transmitters can be active at the same time if they are transmitting at different frequencies with sufficient separation.
-# Our example problem simulates the physical phenomenon (called wave superposition) that occurs when waves from multiple transmitters meet in the air.
-# The waves combine such that the displacement of the combined wave at every point is equal to the sum of the individual wave displacements.
-#
-# If you used another set of radio hardware to receive and digitize this combined waveform, you would get something that looks like our example problem.
-# You could use the DFT to see which frequencies are active.
-# As a sneak peek, here is a zoomed in look at the DFT of our combined signal.
-#
-# lit skip
-
-S = np.fft.fftshift(np.fft.fft(signal, nsamples*2))/(nsamples*2)
-f = np.fft.fftshift(np.fft.fftfreq(nsamples*2))
-plt.plot(f[nsamples//2:-nsamples//2], np.real(S * S.conj())[nsamples//2:-nsamples//2])
-plt.title('DFT(signal)')
-plt.xlabel('frequency (cycles/sample)')
-plt.ylabel('mag^2')
-plt.savefig('dft.png')
-plt.close()
-
-# lit unskip
-# lit execute
-# lit text
+# Note that we could scale `t` and `freqs` by a sample rate to get physical units (e.g seconds and Hertz) that might be applicable to any given application.
+# To keep things general, we are using a normalized sample rate of `1`.
 #
 # Step 1
 # ------
 #
-# With that background out of the way, we can get started on solving this example problem.
-# As a first step, we could pick a frequency and try to detect whether a wave at that frequency was summed into our signal.
-# The simplest frequency to reason about is zero cycles/sample because its wave is just a sequence of one repeated sample:
+# We will start by trying to solve a simpler version of this problem.
+# We will try to determine whether any of these waves have a frequency near zero.
+# To understand why this problem is simpler, consider these waves with successively higher frequencies.
+#
 
-phi = rng.uniform() # random phase offset
-zero_freq_wave = amplitudes * np.exp(1j * (2 * np.pi * 0 * t + phi))
-repeated_samples = amplitudes * np.exp(1j * phi)
-assert np.allclose(zero_freq_wave, repeated_samples)
+# Cycles per sample
+low_freqs = [0, 0.0001, 0.001, 0.01]
+# Use a random phase offset to make things more general
+phi = rng.uniform(0, 2 * np.pi)
+# Show more samples
+t2 = np.arange(512)
+# Show real part only since sine would be similar
+low_freq_waves = [np.cos(2 * np.pi * f * t2 + phi) for f in low_freqs]
 
+# lit skip
+for i, f in enumerate(low_freqs):
+    plt.plot(low_freq_waves[i], label=str(f))
+plt.title('low frequency waves')
+plt.ylabel('amplitude')
+plt.xlabel('sample')
+plt.legend()
+plt.savefig('low-freq-waves.png')
+plt.close()
+
+# lit unskip
+# lit execute
 # lit text
 #
-# When summed into another signal, this wave would simply shift each sample up or down by a constant.
-# This means that we can detect a zero-frequency wave in our signal by computing the signal's mean value.
+# The level of a lower frequency wave does not change much from sample to sample because, by definition, its phase is not changing much.
+# Adding a low frequency wave to another signal will effect an almost constant shift to that signal within a finite window.
+# Even if the phase offset in that window results in a cosine value of `0` (in the real part of the complex sample), the same phase offset will result in a sine value of `1` (in the imaginary part).
 #
 
 # lit skip
@@ -295,7 +161,7 @@ assert np.isclose(c * np.mean(signal), c * np.sum(np.mean(waves, axis=-1)))
 # It does not even consider sample index in its computation
 # Here is an example of a time-invariant system
 system = lambda t, x: t * x
-assert not np.allclose(system(t, b), system(t-1, b))
+# assert not np.allclose(system(t, b), system(t-1, b))
 
 # lit execute
 # lit text
