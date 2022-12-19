@@ -10,7 +10,7 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
-# I have tried to cover background information as needed here but it may also be helpful to read these other posts first:
+# I have tried to cover background information as needed throughout the poast but it may also be helpful to read these other short posts first:
 #
 # - [Complex Signals](/posts/complex-signals/), to understand complex numbers and their relationship to sinusoidal signals
 # - [Nyquist Frequency](/posts/nyquist-frequency/), to understand the basics of sampling
@@ -18,7 +18,7 @@ import matplotlib.patches as plt_patches
 # Example Problem
 # ---------------
 #
-# We will generate several arrays of complex samples, each one representing a pure sinusoid with constant magnitude oscillating at a unique, constant frequency.
+# We will generate several arrays of complex samples, each one representing a pure sinusoid (constant frequency and magnitude).
 # We will then combine these arrays by adding aligned samples together.
 # Our task will be to estimate the individual frequency of each wave by analyzing the combined signal.
 #
@@ -38,8 +38,12 @@ min_wavelength_samps = 10
 min_freq = -1.0 / min_wavelength_samps
 max_freq = 1.0 / min_wavelength_samps
 freqs = rng.uniform(min_freq, max_freq, nwaves)
-# Generate samples for each wave
-waves = [np.exp(2j * np.pi * f * t) for f in freqs]
+# Random phase offset for each wave
+offsets = rng.uniform(0, 2 * np.pi, nwaves)
+# Instantaneous phase of each wave
+phi = [2 * np.pi * freqs[i] * t + offsets[i] for i in range(nwaves)]
+# Complex samples of each wave
+waves = [np.exp(1j * p) for p in phi]
 # Combine
 signal = np.sum(waves, axis=0)
 
@@ -49,6 +53,7 @@ plt.plot(np.imag(signal), label='imag')
 plt.legend()
 plt.title('signal')
 plt.xlabel('sample')
+plt.ylabel('amplitude')
 plt.savefig('signal.png')
 plt.close()
 
@@ -62,36 +67,10 @@ plt.close()
 # Step 1
 # ------
 #
-# We will start by trying to solve a simpler version of this problem.
-# We will try to determine whether any of these waves have a frequency near zero.
-# To understand why this problem is simpler, consider these waves with successively higher frequencies.
-#
-
-# Cycles per sample
-low_freqs = [0, 0.0001, 0.001, 0.01]
-# Use a random phase offset to make things more general
-phi = rng.uniform(0, 2 * np.pi)
-# Show more samples
-t2 = np.arange(512)
-# Plot real part to demonstrate
-low_freq_waves = [np.cos(2 * np.pi * f * t2 + phi) for f in low_freqs]
-
-# lit skip
-for i, f in enumerate(low_freqs):
-    plt.plot(low_freq_waves[i], label=str(f))
-plt.title('low frequency waves')
-plt.ylabel('amplitude')
-plt.xlabel('sample')
-plt.legend()
-plt.savefig('low-freq-waves.png')
-plt.close()
-
-# lit unskip
-# lit execute
-# lit text
-#
-# The level of a lower frequency wave does not change much from sample to sample because, by definition, its phase is not changing much.
-# Adding a low frequency wave to another signal will simply shift that signal up or down by an almost constant amount when considering any short window of samples.
+# We will start by solving a simplified version of this problem: determining whether our signal includes a wave with a frequency near zero.
+# Here is an example showing what that wave might look like.
+# Plot real part of waves at various frequencies
+# Higher frequency waves have mean values closer to zero because they include fewer partial cycles
 #
 
 # lit skip
