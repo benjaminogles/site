@@ -69,8 +69,8 @@ plt.close()
 # Step 1
 # ------
 #
-# We will start by solving a simplified version of this problem: determining whether our sum includes a wave with a frequency near zero.
-# We can do this by examining the sum's mean value.
+# We will start by solving a simplified version of this problem: determining whether our signal includes a wave with a frequency near zero.
+# We can do this by examining the signal's mean value.
 # The following discussion explains why.
 #
 # Sinusoids always oscillate around a mean value of zero.
@@ -86,13 +86,34 @@ assert np.isclose(np.mean(a+b), np.mean(a)+np.mean(b))
 # lit execute
 # lit text
 #
-# So the mean of any sum of sinusoids is also theoretically zero.
-# But in practice we can only ever analyze a finite window of any signal.
-# The mean value of a sinusoid within a finite window will only be zero if that window includes a whole number of cycles exactly.
-# Otherwise, the unfinished cycle at the end of the window will bias its mean value (and the mean value of any sum it belongs to) away from zero.
+# So the mean of any sum of sinusoids is also zero.
+# But in practice we can only ever analyze a finite window of samples from a sinusoid.
+# And the mean value of a sinusoid within a finite window will only be zero if it includes a whole number of cycles exactly.
+# Otherwise, the unfinished cycle at the end of the window will bias its mean value (and the mean value of any sum) away from zero.
 #
 # The amount of bias introduced by an unfinished cycle depends on how "unfinished" it is.
-# The closer a wave is to completing a whole number of cycles in a given finite window, the closer its mean value will be to zero in that window.
+# The closer a wave is to completing a whole number of cycles in a given finite window, the closer its mean value will be to zero.
+# A full peak (or valley) without the corresponding valley (or peak) on the other side of zero will result in the largest
+# We can see this in the following plot.
+#
+
+# Test many frequencies in (-0.5, 0.5)
+tests = np.linspace(-0.5, 0.5, nsamples * 10 + 1)
+# Compute mean value of each with a window of nsamples
+results = np.mean([np.exp(2j*np.pi*f*t) for f in tests], axis=-1)
+
+# lit skip
+plt.plot(tests, np.abs(results))
+plt.title(f'mean of sinusoids ({nsamples} samples)')
+plt.xlabel('frequency')
+plt.ylabel('mag')
+plt.savefig('mean-detector.png')
+plt.close()
+
+# lit unskip
+# lit execute
+# lit text
+#
 #
 
 # lit skip
