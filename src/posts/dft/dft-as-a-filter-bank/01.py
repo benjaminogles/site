@@ -10,17 +10,18 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
-# I have tried to cover background information as needed throughout the poast but it may also be helpful to read these other short posts first:
+# It may be helpful to read these short posts first for some basic background information:
 #
 # - [Complex Signals](/posts/complex-signals/), to understand complex numbers and their relationship to sinusoidal signals
 # - [Nyquist Frequency](/posts/nyquist-frequency/), to understand the basics of sampling
+#
+# See (/posts/dft/) for a high level overview of the DFT and links to other resources for understanding it.
 #
 # Example Problem
 # ---------------
 #
 # We will generate several arrays of complex samples, each one representing a pure sinusoid (constant frequency and magnitude).
-# We will then combine these arrays by adding aligned samples together.
-# Our task will be to estimate the individual frequency of each wave by analyzing the combined signal.
+# Our task will be to estimate the individual frequencies of these waves by analyzing the sum of their samples.
 #
 
 # Seed random number generator
@@ -48,6 +49,7 @@ waves = [np.exp(1j * p) for p in phi]
 signal = np.sum(waves, axis=0)
 
 # lit skip
+assert nsamples == 128, 'text may reference this number'
 plt.plot(np.real(signal), label='real')
 plt.plot(np.imag(signal), label='imag')
 plt.legend()
@@ -67,24 +69,45 @@ plt.close()
 # Step 1
 # ------
 #
-# We will start by solving a simplified version of this problem: determining whether our signal includes a wave with a frequency near zero.
-# Here is an example showing what that wave might look like.
-# Plot real part of waves at various frequencies
-# Higher frequency waves have mean values closer to zero because they include fewer partial cycles
+# We will start by solving a simplified version of this problem: determining whether our sum includes a wave with a frequency near zero.
+# We can do this by examining the sum's mean value.
+#
+# Sinusoids always oscillate around a mean value of zero.
+# Recall that the arithmetic mean is a linear operator.
+#
+
+# Two random signals
+a = rng.uniform(size=nsamples)
+b = rng.uniform(size=nsamples)
+# Mean of sum is equal to sum of means
+assert np.isclose(np.mean(a+b), np.mean(a)+np.mean(b))
+
+# lit execute
+# lit text
+#
+# So the mean value of a sum of sinusoids is also theoretically zero.
+# But in practice we can only ever analyze a finite window of any signal.
+# The mean value of a sinusoid within a finite window will only be zero if that window includes a whole number of cycles.
+# Otherwise, the unfinished cycle at the end of the window will bias its mean value (and the mean value of any sum it belongs to) away from zero.
+#
+# Inversely proportional to `nsamples/`
 #
 
 # lit skip
 assert np.abs(np.mean(signal)) < 0.2, "did the rng seed change?"
 # lit unskip
 
-m = np.mean(signal)
-print(f'mean={m} mag={abs(m)}')
+print(f'mean={np.mean(signal)}')
 
 # lit text
 #
-# In this case, the mean value of our signal is near `0` in both the real and imaginary parts.
+# The mean value of our signal is only slightly biased away from zero in both the real and imaginary parts.
 #
 # lit execute
+#
+# However,
+#
+# A wave with a frequency near zero will hardly change within
 #
 # If one of our waves was a constant, we would expect the mean value of the signal to reflect that sample and have a larger magnitude (all of our waves have a magnitude of `1`).
 # But then shouldn't we also expect a mean value of _exactly_ `0` if all of these waves have non-zero frequency?
