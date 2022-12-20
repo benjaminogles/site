@@ -15,7 +15,7 @@ import matplotlib.patches as plt_patches
 # - [Complex Signals](/posts/complex-signals/), to understand complex numbers and their relationship to sinusoidal signals
 # - [Nyquist Frequency](/posts/nyquist-frequency/), to understand the basics of sampling
 #
-# See (/posts/dft/) for a high level overview of the DFT and links to other resources for understanding it.
+# Click [here](/posts/dft/) for a high level overview of the DFT and links to other resources for understanding it.
 #
 # Example Problem
 # ---------------
@@ -71,6 +71,7 @@ plt.close()
 #
 # We will start by solving a simplified version of this problem: determining whether our sum includes a wave with a frequency near zero.
 # We can do this by examining the sum's mean value.
+# The following discussion explains why.
 #
 # Sinusoids always oscillate around a mean value of zero.
 # Recall that the arithmetic mean is a linear operator.
@@ -85,12 +86,13 @@ assert np.isclose(np.mean(a+b), np.mean(a)+np.mean(b))
 # lit execute
 # lit text
 #
-# So the mean value of a sum of sinusoids is also theoretically zero.
+# So the mean of any sum of sinusoids is also theoretically zero.
 # But in practice we can only ever analyze a finite window of any signal.
-# The mean value of a sinusoid within a finite window will only be zero if that window includes a whole number of cycles.
+# The mean value of a sinusoid within a finite window will only be zero if that window includes a whole number of cycles exactly.
 # Otherwise, the unfinished cycle at the end of the window will bias its mean value (and the mean value of any sum it belongs to) away from zero.
 #
-# Inversely proportional to `nsamples/`
+# The amount of bias introduced by an unfinished cycle depends on how "unfinished" it is.
+# The closer a wave is to completing a whole number of cycles in a given finite window, the closer its mean value will be to zero in that window.
 #
 
 # lit skip
