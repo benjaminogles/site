@@ -10,12 +10,12 @@ import matplotlib.patches as plt_patches
 # ==================================================
 #
 # In this post, I use a simple example problem to motivate the derivation of the DFT as a bank of bandpass filters.
-# It may be helpful to read these short posts first for some basic background information:
+# I have written about some other ways to think about the DFT [here](/posts/dft/).
+#
+# It may be helpful to read these posts as prerequisites to this one:
 #
 # - [Complex Signals](/posts/complex-signals/), to understand complex numbers and their relationship to sinusoidal signals
 # - [Nyquist Frequency](/posts/nyquist-frequency/), to understand the basics of sampling
-#
-# Click [here](/posts/dft/) for a high level overview of the DFT and links to other resources for understanding it.
 #
 # Example Problem
 # ---------------
@@ -69,12 +69,23 @@ plt.close()
 # Step 1
 # ------
 #
-# We will start by solving a simplified version of this problem: determining whether our signal includes a wave with a frequency near zero.
-# We can do this by examining the signal's mean value.
+# We will start by solving a simpler version of this problem: determining whether our signal includes a wave with a frequency near zero.
+# We can do this by examining our signal's mean sample value.
 # The following discussion explains why.
 #
-# Sinusoids always oscillate around a mean value of zero.
-# Recall that the arithmetic mean is a linear operator.
+# Zero is the only frequency that can generate a sinusoid with a non-zero mean value.
+#
+# constant and must be non-zero in at least one of the real and imaginary parts of its complex representation due to the relationship between cosine (real) and sine (imaginary) applied to the same phase argument.
+# A frequency of exactly zero generates a constant value which must be non-zero.
+# A wave with a frequency of exactly zero is constant.
+# Waves with frequencies near zero are almost constant throughout the finite block of samples we are analyzing.
+#
+# Waves with frequencies near zero will be almost constant within the block of samples we are analyzing because.
+# Waves with frequencies far from zero will simply "ride" on top of these low frequency waves
+# We can do this by smoothing out high frequency oscillations in our signal and seeing if there is anything left.
+# One of the simplest smoothing functions we could use (and the one that leads to deriving the DFT) is a rolling average.
+#
+# Any sum of sinusoids also has a mean value of zero.
 #
 
 # Two random signals
