@@ -82,5 +82,5 @@ assert np.allclose(b_n, np.cos(2*np.pi*f1*nT))
 # The only way to work around this ambiguity is to limit the bandwidth of the continuous signal (the range of frequencies it contains) before sampling so that no two frequencies represented in the continuous signal are separated by an integer multiple of `fs`.
 # Typically, we limit the bandwidth of the continuous signal to `(-fs/2, fs/2)` before sampling.
 # The limiting frequencies `-fs/2` and `fs/2` are called Nyquist frequencies, named after the scientist Harry Nyquist who helped formalize a lot of this theory.
-# This brings us full circle to the intuitive idea that our sampling process must adequately capture high frequency oscillations i.e. we need more than two samples, on average, in each cycle of any frequency contained in the continuous signal.
+# This brings us full circle to the intuitive idea that our sampling process must adequately capture high frequency oscillations i.e. we need more than two samples, on average, in each cycle of any frequency component contained in the continuous signal.
 #

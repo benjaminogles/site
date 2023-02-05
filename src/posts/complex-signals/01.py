@@ -10,7 +10,7 @@ import numpy as np
 # Complex Signals
 # ===============
 #
-# **Published: 2022/12/15**
+# **Published: 2023/02/04**
 #
 # In this post, I briefly define complex numbers and describe how they are used in many signal processing applications.
 #
@@ -119,35 +119,42 @@ assert np.isclose(y, A * np.sin(θ))
 # It is immediately apparent that we can represent this signal with complex numbers.
 #
 
-# Suppose A(t) = 1 for some t
-A = 1
-# Suppose θ(t) = 3π/4 for some t
-θ = 3 * np.pi / 4
-# Real-valued cosine sample
+rng = np.random.default_rng()
+# Generate random A(t)
+A = rng.uniform(0, 1, size=10)
+# Generate random θ(t)
+θ = rng.uniform(-np.pi, np.pi, size=10)
+# A(t) * cos(θ(t))
 x = A * np.cos(θ)
-# Real-valued sine sample
+# A(t) * sin(θ(t))
 y = A * np.sin(θ)
-# Complex sample
+# Complex samples
 x_p_jy = x + 1j * y
 # We can recover A(t)
-assert np.isclose(np.abs(x_p_jy), A)
+assert np.allclose(np.abs(x_p_jy), A), str(list(A)) + " != " + str(list(np.abs(x_p_jy)))
 # We can recover θ(t)
-assert np.isclose(np.angle(x_p_jy), θ)
+assert np.allclose(np.angle(x_p_jy), θ)
 # We can recover x(t)
-assert np.isclose(np.real(x_p_jy), x)
-# The complex sample has all we need
+assert np.allclose(np.real(x_p_jy), x)
+# The complex signal has all we need
 
 # lit execute
 # lit text
+#
+# How?
+# ----
+#
+# The program above showed that we can represent the signal `x(t) = A(t) * cos(θ(t))` with complex numbers if we can compute `y(t) = A(t) * sin(θ(t))` to form `x(t) + j * y(t)`.
+# This is easy enough if we know `A(t)` and `θ(t)` separately.
+# It is also possible to compute `y(t)` from `x(t)` alone as well.
+# But I will cover that in a separate post.
 #
 # Why?
 # ----
 #
 # In many applications, all of the important information resides in `A(t)` and `θ(t)` rather than `x(t)` itself.
 # In these cases, we need a way to quickly and accurately recover `A(t)` and `θ(t)` from `x(t)`.
-# This is done by computing `y(t) = A(t) * sin(θ(t))` and computing `A(t)` and `θ(t)` from the complex-valued signal `x(t) + j * y(t)`.
-#
-# I will cover methods of computing `y(t)` from `x(t)` when `A(t)` and `θ(t)` are unknown in another post.
+# As mentioned above, this is done by computing `y(t) = A(t) * sin(θ(t))` and analyzing the complex-valued signal `x(t) + j * y(t)` instead.
 #
 # Euler's Formula
 # ---------------
@@ -156,7 +163,7 @@ assert np.isclose(np.real(x_p_jy), x)
 #
 
 z = A * np.exp(1j * θ)
-assert np.isclose(x_p_jy, z)
+assert np.allclose(x_p_jy, z)
 
 # lit execute
 # lit text
@@ -166,15 +173,15 @@ assert np.isclose(x_p_jy, z)
 #
 
 # Start with Euler's formula
-assert np.isclose(z, x + 1j * y)
+assert np.allclose(z, x + 1j * y)
 # Complex conjugate of both sides
-assert np.isclose(np.conj(z), x - 1j * y)
+assert np.allclose(np.conj(z), x - 1j * y)
 # Add this equation to the one above it
-assert np.isclose(z + np.conj(z), 2 * x)
+assert np.allclose(z + np.conj(z), 2 * x)
 # Solve for the cosine term
-assert np.isclose((z + np.conj(z)) / 2,  x)
+assert np.allclose((z + np.conj(z)) / 2,  x)
 # Solve for the sine term
-assert np.isclose((z - np.conj(z)) / 2j,  y)
+assert np.allclose((z - np.conj(z)) / 2j,  y)
 
 # lit execute
 # lit text
@@ -191,22 +198,22 @@ assert np.isclose((z - np.conj(z)) / 2j,  y)
 # Luckily, a sum of these signals takes on the exact same form.
 #
 
-# B(t) = 2 for some t
-B = 2
-# ϕ(t) = π/2 for some t
-ϕ = np.pi / 2
-# Real-valued sample
+# Random B(t)
+B = rng.uniform(0, 1, size=10)
+# Random ϕ(t)
+ϕ = rng.uniform(-np.pi, np.pi, size=10)
+# Real-valued samples
 r = B * np.cos(ϕ)
 # Complex-valued sample
 w = B * np.exp(1j * ϕ)
-# Real-valued sample of the summed signal
+# Real-valued samples of the summed signal
 s = x + r
 # Unpack definitions of x and r in terms of w and z
-assert np.isclose(s, (z + np.conj(z) + w + np.conj(w)) / 2)
-# Rearrange; s is composed of a complex number and its conjugate
-assert np.isclose(s, (z+w + np.conj(z+w)) / 2)
+assert np.allclose(s, (z + np.conj(z) + w + np.conj(w)) / 2)
+# Rearrange; s is composed of complex numbers and their conjugates
+assert np.allclose(s, (z+w + np.conj(z+w)) / 2)
 # Write s in the form A(t) * cos(θ(t))
-assert np.isclose(s, np.abs(z+w) * np.cos(np.angle(z+w)))
+assert np.allclose(s, np.abs(z+w) * np.cos(np.angle(z+w)))
 
 # lit execute
 # lit text
