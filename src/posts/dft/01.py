@@ -38,7 +38,7 @@ x = generate_complex_samples(N)
 #
 # The claim of the DFT is that we can construct this vector `x`, and any other such vector `x`, as a unique weighted sum (called a linear combination) of `N` pure sinusoids.
 # The weights assigned to each sinusoid give us an indication of the frequency content in `x`.
-# I wouldn't say this claim is obviously true, just by looking at our example `x` so it is worth a thorough derivation.
+# I wouldn't say this claim is obviously true, just by looking at our example `x`, so it is worth a thorough derivation.
 #
 
 # lit skip
