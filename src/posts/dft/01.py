@@ -4,10 +4,10 @@
 # Discrete Fourier Transform
 # ==========================
 #
-# In this post, I introduce the Discrete Fourier Transform (DFT) from a few different perspectives.
+# In this post, I derive the formula for the Discrete Fourier Transform (DFT) and examine it from a few different perspectives.
 #
-# Basic Matrix Perspective
-# ------------------------
+# Basic Matrix Derivation
+# -----------------------
 #
 # Mathematically, a sequence of complex samples, such as the arbitrary and random one below, can be considered a _vector_.
 # This vector belongs to a _vector space_ that contains all such length-`N` vectors.
@@ -34,6 +34,13 @@ def generate_complex_samples(N):
 N = 1024
 x = generate_complex_samples(N)
 
+# lit text
+#
+# The claim of the DFT is that we can construct this vector `x`, and any other such vector `x`, as a unique weighted sum (called a linear combination) of `N` pure sinusoids.
+# The weights assigned to each sinusoid give us an indication of the frequency content in `x`.
+# I wouldn't say this claim is obviously true, just by looking at our example `x` so it is worth a thorough derivation.
+#
+
 # lit skip
 
 import matplotlib.pyplot as plt
@@ -50,8 +57,7 @@ plt.close()
 # lit execute
 # lit text
 #
-# The claim of the DFT is that we can construct any vector `x` in this space as a unique weighted sum (called a linear combination) of `N` pure sinusoids.
-# A pure sinusoid, in vector form, is a sequence of complex samples that advance in phase according to the sinusoid's constant frequency.
+# A pure sinusoid, in vector form, is a sequence of complex samples with phase angles that advance according to the sinusoid's constant frequency.
 #
 
 def complex_sinusoid(freq, N):
@@ -87,9 +93,9 @@ def dft_freqs(N):
 
 # lit text
 #
-# Assume that we have defined `dft_freqs(N)` and use it to generate the DFT matrix `A`.
+# Assume that we have defined `dft_freqs(N)` and use it to generate the `NxN` DFT matrix `A` with columns containing samples of pure sinusoids.
 # Also assume that we have a routine, `dft(x)` that computes the weights for generating `x` as a linear combination of the columns of `A`.
-# Then the inverse DFT (computing `x` from `dft(x)`), is trivially derived as computing that linear combination.
+# Then the inverse DFT (computing `x` from `dft(x)`), is trivially derived as taking that linear combination <a id="footnote-1-ref" href="#footnote-1">[1]</a>.
 #
 
 def idft(X):
@@ -102,19 +108,8 @@ def idft(X):
 
 # lit text
 #
-# If you're used to thinking of matrix multiplication results in an entry-by-entry way as row-column dot products, it is worth training your mind to also view the results in a column-by-column or row-by-row way as linear combinations of the matrix columns or rows depending on whether the matrix in question is on the left or right side of the expression.
-# The matrix or vector on the other side of the expression contains the weights of the combination in its rows or columns depending on whether *it* appears on the left or right side of the expression.
-# Eli Bendersky has a helpful visualization of these operations on his site [here](https://eli.thegreenplace.net/2015/visualizing-matrix-multiplication-as-a-linear-combination/).
-#
-# By studying `idft(X)`, we can start to answer why the DFT matrix must be an `NxN` matrix.
-# To restate the claim of the DFT, we claim that `idft(X)` can generate every possible `x` in our `N`-dimensional vector space by combining the columns of `A` with a unique weight vector `X`.
-#
-# In linear algebra terms, we claim that the _column space_ of `A` is equivalent to our `N`-dimensional vector space, i.e. that the columns of `A` form a basis for the space.
-# Although out of scope for this article, it is not too difficult to prove that every basis for an `N`-dimensional vector space has exactly `N` vectors.
-# This [video](https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces/null-column-space/v/proof-any-subspace-basis-has-same-number-of-elements) from Kahn Academy can guide you most of the way by proving that every basis of a subspace must contain the same number of vectors (you can then use the columns of the appropriately sized identity matrix as an example basis for any subspace to complete the proof).
-#
-# We can use `idft(X)` to derive the expression for `dft(x)`.
-# We have
+# We can now use `idft(X)` to derive the expression for `dft(x)`.
+# We want
 #
 # `x = idft(dft(x))`
 #
@@ -122,14 +117,18 @@ def idft(X):
 #
 # `x = (A)dft(x)`.
 #
-# Multiplying by the inverse of `A` on both sides completes the derivation:
+# Left multiplying by the inverse of `A` on both sides completes the derivation:
 #
 # `(A^-1)x = dft(x)`.
 #
-# Our previous claims about `A` imply that it is invertible.
-# In fact, we can see that the invertibility of `A` is all we need to implement `dft(x)` and `idft(x)` correctly.
-# Specifically, we can make the inverse of `A` equal to its conjugate transpose by making its columns _orthonormal_.
-# Then `dft(x)` is easily implemented.
+# Note that `(A^-1)` must be a left and right inverse of `A` (i.e. `A` must be invertible) because we need to left multiply the above equation by `A` to get back to the expression for `idft(x)`.
+#
+# So we have our answer on why `A` must be an `NxN` matrix: it must be a square matrix to be invertible and it must have `N` rows corresponding to the `N` samples in `x`.
+# We could expound on the properties of `A` in linear algebra terms <a id="footnote-2-ref" href="#footnote-2">[2]</a> but it obviously isn't necessary for the derivation since we already have expressions for `dft(x)` and `idft(X)`.
+# Perhaps the simplest way to think about deriving the DFT matrix is to lean on the algebra above and just think about choosing `dft_freqs(N)` so that `A` is invertible.
+#
+# If we choose `dft_freqs(N)` correctly, we can make `A` trivially invertible by making its columns _orthonormal_.
+# Then, the inverse of `A` will be equal to its conjugate transpose and `dft(x)` is implemented easily.
 #
 
 def dft(x):
@@ -144,18 +143,41 @@ def dft(x):
 # lit text
 #
 # Now we need to implement `dft_freqs(N)` to actually return `N` frequencies that generate orthonormal vectors.
-# Two vectors are orthonormal if they are both unit vectors and they are _orthogonal_ i.e. their inner product is `0`.
-# We already implemented `complex_sinusoids(N,freqs)` to always return unit vectors.
-# Now we need to implement `dft_freqs(N)` to return `N` frequencies that generate vectors with.
+# Two vectors are orthonormal if they are unit vectors and their inner product is `0`.
 #
 
 def inner(a, b):
     "Return the inner product of vectors `a` and `b`"
     return np.dot(a.conj(), b)
 
+def is_unit(a):
+    "Return whether `a` is a unit vector"
+    return np.isclose(inner(a, a), 1.0)
+
+def is_orthogonal(a, b):
+    "Return whether `a` and `b` are orthogonal"
+    return np.isclose(inner(a, b), 0.0)
+
 # lit text
 #
-# Let's see how
+# We already implemented `complex_sinusoids(N,freqs)` to always return unit vectors.
+# We need to determine which set of frequencies generate mutually orthogonal vectors.
 #
-# Two vectors are orthogonal if their _inner product_ is `0`.
+# Footnotes
+# ---------
 #
+# <p id="footnote-1">Footnote [1] (<a href="#footnote-1-ref">back</a>)</p>
+#
+# The routine `idft(X)` computes a linear combination of the columns of `A` given by the weights in `X` and is implemented as a matrix multiplication.
+# If you're used to thinking of matrix multiplication results in an entry-by-entry way as row-column dot products, it is worth training your mind to also view the results in a column-by-column or row-by-row way as linear combinations of the matrix columns or rows depending on whether the matrix in question is on the left or right side of the expression.
+# The matrix or vector on the other side of the expression contains the weights of the combinations in its rows or columns depending on whether *it* appears on the left or right side of the expression.
+# Eli Bendersky has a helpful visualization of these operations on his site [here](https://eli.thegreenplace.net/2015/visualizing-matrix-multiplication-as-a-linear-combination/).
+# 
+#
+# <p id="footnote-2">Footnote [2] (<a href="#footnote-2-ref">back</a>)</p>
+#
+# To restate the claim of the DFT, we claim that `idft(X)` can generate every possible `x` in our `N`-dimensional vector space by combining the columns of `A` with a unique weight vector `X`.
+# In linear algebra terms, we claim that the _column space_ of `A` is equivalent to our `N`-dimensional vector space, i.e. that the columns of `A` form a basis for the space.
+# Although out of scope for this article, it is not too difficult to prove that every basis for an `N`-dimensional vector space has exactly `N` vectors.
+# This [video](https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces/null-column-space/v/proof-any-subspace-basis-has-same-number-of-elements) from Kahn Academy can guide you most of the way by proving that every basis of a subspace must contain the same number of vectors (you can then use the columns of the appropriately sized identity matrix as an example basis for any subspace to complete the proof).
+# Because the columns of `A` form a basis for an `N`-dimensional space, `A` is invertible and may be called a _change of basis_ matrix that maps coordinate vectors between the standard basis and the basis formed by its columns.
