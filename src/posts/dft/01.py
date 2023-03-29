@@ -4,10 +4,10 @@
 # Discrete Fourier Transform
 # ==========================
 #
-# In this post, I derive the formula for the Discrete Fourier Transform (DFT) and examine it from a few different perspectives.
+# In this post, I derive the formula for the Discrete Fourier Transform (DFT) as a matrix and then show a few other ways to interpret its meaning.
 #
-# Basic Matrix Derivation
-# -----------------------
+# Matrix Derivation
+# -----------------
 #
 # Mathematically, a sequence of complex samples, such as the arbitrary and random one below, can be considered a _vector_.
 # This vector belongs to a _vector space_ that contains all such length-`N` vectors.
@@ -102,8 +102,8 @@ def idft(X):
     Inverse DFT: given `X = dft(x)`, return `x`.
     """
     N = len(X)
-    A = complex_sinusoids(dft_freqs(N), N)
-    return np.matmult(A, X)
+    A = complex_sinusoids(N, dft_freqs(N))
+    return np.matmul(A, X)
 
 # lit text
 #
@@ -126,8 +126,52 @@ def idft(X):
 # We could expound on the properties of `A` in linear algebra terms <a id="footnote-2-ref" href="#footnote-2">[2]</a> but it obviously isn't necessary for the derivation since we already have expressions for `dft(x)` and `idft(X)`.
 # Perhaps the simplest way to think about deriving the DFT matrix is to lean on the algebra above and just think about choosing `dft_freqs(N)` so that `A` is invertible.
 #
-# If we choose `dft_freqs(N)` correctly, we can make `A` trivially invertible by making its columns _orthonormal_.
-# Then, the inverse of `A` will be equal to its conjugate transpose and `dft(x)` is implemented easily.
+# We can't settle for just any invertible matrix though.
+# There is an important property need `A` must have to properly implement the DFT that constrains the nature of its inverse.
+# We need `A` to preserve inner products.
+#
+
+def inner(a, b):
+    "Return the inner product of vectors `a` and `b`"
+    return np.dot(a.conj(), b)
+
+# lit text
+#
+# So we need
+#
+# `inner(x, y) = inner(Ax, Ay)`.
+#
+# Expanding the definition of `inner` gives
+#
+# `x*y = (Ax)*(Ay)`
+#
+# where `*` denotes the conjugate transpose operation and vectors are considered column vectors.
+# We can then use the fact that the conjugate transpose of a matrix product is equal to the flipped product of its member's conjugate transposes to write
+#
+# `x*y = x*A*Ay`.
+#
+# For this to be true, we need
+#
+# `A*A = I`.
+#
+# In other words, we need the inverse of `A` to be its own conjugate transpose.
+# This means that the columns of `A` must be _orthonormal_ i.e. they must be unit vectors and their mutual inner products must be zero.
+# Then, every entry of `A*A` will be zero except for the diagonal which will contain ones (the magnitude squared of each column).
+# This of course describes the identity matrix, as desired.
+#
+# To see why preserving inner products may be useful, rewrite the first step above but replace `A` with `A*`.
+#
+# `inner(x, y) = inner(A*x, A*y)`.
+#
+# You can prove this statement with the same steps as above since `A*A = AA*`.
+# Also, since `A*` is the inverse of `A`, we can substitute in our derived expression for the DFT of a vector.
+#
+# `inner(x, y) = inner(dft(x), dft(y))`
+#
+# meaning that the inner product of two vectors is unchanged by the DFT.
+# If `x = y`, then this fact tells us that the energy of a discrete signal is the same as the energy of its frequency domain representation.
+#
+# With the inverse of `A` defined, we can now implement `dft(x)`.
 #
 
 def dft(x):
@@ -136,66 +180,92 @@ def dft(x):
     of the columns in the DFT matrix.
     """
     N = len(x)
-    A = complex_sinusoids(dft_freqs(N), N)
+    A = complex_sinusoids(N, dft_freqs(N))
     return A.conj().T @ x
 
 # lit text
 #
 # Now we need to implement `dft_freqs(N)` to actually return `N` frequencies that generate orthonormal vectors.
-# Two vectors are orthonormal if they are unit vectors and their inner product is `0`.
-#
-
-def inner(a, b):
-    "Return the inner product of vectors `a` and `b`"
-    return np.dot(a.conj(), b)
-
-def is_unit(a):
-    "Return whether `a` is a unit vector"
-    return np.isclose(inner(a, a), 1.0)
-
-def is_orthogonal(a, b):
-    "Return whether `a` and `b` are orthogonal"
-    return np.isclose(inner(a, b), 0.0)
-
-# lit text
-#
 # We already implemented `complex_sinusoids(N,freqs)` to always return unit vectors.
 # We need to determine which set of frequencies generate mutually orthogonal vectors.
 #
 # Recall (or see this [post](/posts/nyquist-frequency/)) that the samples of two sinusoids with the same initial phase will be exactly equal if the difference between their normalized frequencies (cycles per sample) is an integer.
 # Two vectors cannot be orthogonal if they contain the same entries so we can immediately limit our search to a range of `1` cycles per sample.
-# I'm not clever enough to derive the right set of frequencies from first principles so I'll just start with the first frequency in the range `[0, 1)` and do a brute force search for orthogonal frequencies.
+#
+# The inner product of two vectors is defined as the sum of their point-wise product after the first is conjugated.
+# Let's look at the general expression for this point-wise product between two unit vectors containing complex samples of pure sinusoids where `f` and `g` are the two normalized frequencies in cycles per sample and `n` is the sample index.
+#
+# `(1/sqrt(N))exp(-j2πfn)(1/sqrt(N))exp(j2πgn)`,  `0 <= n < N`.
+#
+# To simplify this expression, let's ignore its magnitude and define the angular frequencies `φ = 2πf` and `θ = 2πg`.
+#
+# `exp(-jφn)exp(jθn)`,  `0 <= n < N`.
+#
+# Since the two terms have the same base, we can sum their exponents:
+#
+# `exp(j(θ-φ)n)`, `0 <= n < N`.
+#
+# The point-wise product vector just looks like another pure sinusoid with angular frequency `θ-φ`.
+# We need this vector's entries to sum to zero whenever `θ` does not equal `φ`.
+# For good measure, let's look at the real and imaginary components of this vector's entries separately.
+#
+# `cos((θ-φ)n) + jsin((θ-φ)n)`, `0 <= n < N`.
+#
+# The sum of this vector's entries is a complex number with the sum of a cosine wave in the real part and the sum of a sine wave in the imaginary part.
+# The sum will only be zero when `N` samples completes an integer number of cycles of the wave with angular frequency `θ-φ`.
+# This is true when `N(θ-φ)` is an integer multiple of `2π` or, equivalently, when `N(g-f)` is an integer.
+#
+# To summarize, we need to choose `N` frequencies within a range of `1` cycles per sample where the difference of each pair multiplied by `N` is an integer.
+# I believe these constraints leave us with only one way to implement `dft_freqs(N)`.
 #
 
-def complex_sinusoid_inners(N, f1):
-    f2 = np.linspace(0, 1, N * N, endpoint=False)
-    a = complex_sinusoid(N, f1)
-    B = complex_sinusoids(N, f2)
-    return np.abs(inner(a, B))
+def dft_freqs(N):
+    """
+    Return the `N` frequencies in cycles/sample used to generate
+    the DFT matrix.
+    """
+    return np.arange(N) / N
 
-# The math needs to be independent of N so we might as
-# well stick to small N in this brute force search
-zero_test = complex_sinusoid_inners(8, 0)
+# lit text
+#
+# To double check that this implementation meets both of our constraints, we have
+#
+# `(N-1)/N < 1`
+#
+# as the range of frequencies returned by `dft_freqs(N)` and
+#
+# `N(k/N-l/N) = k-l`, `k` and `l` integers
+#
+# as the difference of each pair of frequencies multiplied by `N`.
+# With `dft_freqs(N)` implemented, we can check the rest of our program.
+#
 
-# lit skip
+I = np.identity(N)
+A = complex_sinusoids(N, dft_freqs(N))
+assert np.allclose(I, A.conj().T @ A)
+assert np.allclose(I, A @ A.conj().T)
 
-plt.plot(np.linspace(0, 1, len(zero_test)), zero_test)
-plt.title('inner products of sinusoids ($f_1=0$)')
-plt.xlabel('$f_2$ (cycles/sample)')
-plt.ylabel('|inner product|')
-plt.savefig('zero-test.png')
-plt.close()
+X = dft(x)
+assert np.isclose(inner(x, x), inner(X, X))
+assert np.allclose(x, idft(X))
 
-# lit unskip
 # lit execute
 # lit text
 #
-# We can see that the inner product of the `0`-frequency sinusoid vector with itself (its magnitude squared) is `1` as expected and it approaches `1` again as we approach its alias vector at frequency `1` cycles per sample.
-# We can also see it approaching `0` at regular intervals and we can get a clue for why by
+# Here is a look at the DFT of `x`.
+# We plot the back half of the result first since the column vectors in `A` with frequencies in the range `(0.5, 1)` also represent the frequencies in the range `(-0.5, 0)`.
 #
 
-assert np.allclose(1, complex_sinusoid(N, 0) * np.sqrt(N))
+# lit skip
 
+plt.plot(np.fft.fftshift(np.fft.fftfreq(N)), np.abs(np.fft.fftshift(X)))
+plt.title('X')
+plt.xlabel('normalized frequency')
+plt.ylabel('magnitude')
+plt.savefig('X.png')
+plt.close()
+
+# lit unskip
 # lit execute
 # lit text
 #
@@ -216,4 +286,5 @@ assert np.allclose(1, complex_sinusoid(N, 0) * np.sqrt(N))
 # In linear algebra terms, we claim that the _column space_ of `A` is equivalent to our `N`-dimensional vector space, i.e. that the columns of `A` form a basis for the space.
 # Although out of scope for this article, it is not too difficult to prove that every basis for an `N`-dimensional vector space has exactly `N` vectors.
 # This [video](https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces/null-column-space/v/proof-any-subspace-basis-has-same-number-of-elements) from Kahn Academy can guide you most of the way by proving that every basis of a subspace must contain the same number of vectors (you can then use the columns of the appropriately sized identity matrix as an example basis for any subspace to complete the proof).
-# Because the columns of `A` form a basis for an `N`-dimensional space, `A` is invertible and may be called a _change of basis_ matrix that maps coordinate vectors between the standard basis and the basis formed by its columns.
+# We will see that we further need the columns of `A` to form an _orthonormal_ basis for our vector space, making it a _unitary_ matrix.
+#
