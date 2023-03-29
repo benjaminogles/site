@@ -190,7 +190,7 @@ plt.close()
 # lit execute
 # lit text
 #
-# We can see that the inner product of the `0`-frequency sinusoid vector with itself (its length) is `1` as expected and it approaches `1` again as we approach its alias vector at frequency `1` cycles per sample.
+# We can see that the inner product of the `0`-frequency sinusoid vector with itself (its magnitude squared) is `1` as expected and it approaches `1` again as we approach its alias vector at frequency `1` cycles per sample.
 # We can also see it approaching `0` at regular intervals and we can get a clue for why by
 #
 
