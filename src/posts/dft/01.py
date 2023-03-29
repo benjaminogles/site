@@ -60,13 +60,13 @@ plt.close()
 # A pure sinusoid, in vector form, is a sequence of complex samples with phase angles that advance according to the sinusoid's constant frequency.
 #
 
-def complex_sinusoid(freq, N):
+def complex_sinusoid(N, freq):
     """
     Return `N` complex samples of a sinusoid oscillating at `freq`
     cycles/sample with an initial phase of `0`. Normalize the result
     to a unit length vector.
     """
-    return np.exp(2j * np.pi * freq * np.arange(N)) / N
+    return np.exp(2j * np.pi * freq * np.arange(N)) / np.sqrt(N)
 
 # lit text
 #
@@ -78,25 +78,24 @@ def complex_sinusoid(freq, N):
 def complex_sinusoids(N, freqs):
     """
     Return an `NxM` matrix where `M = len(freqs)`. Each column
-    vector contains `N` samples of a sinusoid oscillating at the
-    associated frequency in `freqs` (cycles/sample).
+    vector contains `N` complex samples of a sinusoid oscillating
+    at the associated frequency in `freqs` (cycles/sample).
     """
-    return np.column_stack([complex_sinusoid(f) for f in freqs])
+    return np.column_stack([complex_sinusoid(N, f) for f in freqs])
 
 # lit text
 #
-# To (hopefully) aid understanding, I'm going to postpone defining the `N` frequencies used to generate the columns of the DFT matrix and explaining why there must be `N` of them until we've had a chance to look at how the matrix is used in the DFT and inverse DFT formulas.
-# 
-
-def dft_freqs(N):
-    pass # TODO
-
-# lit text
-#
-# Assume that we have defined `dft_freqs(N)` and use it to generate the `NxN` DFT matrix `A` with columns containing samples of pure sinusoids.
+# Assume, for now, that we have defined `dft_freqs(N)` so that we can use it to generate an `NxN` matrix `A` with columns containing complex samples of pure sinusoids.
 # Also assume that we have a routine, `dft(x)` that computes the weights for generating `x` as a linear combination of the columns of `A`.
 # Then the inverse DFT (computing `x` from `dft(x)`), is trivially derived as taking that linear combination <a id="footnote-1-ref" href="#footnote-1">[1]</a>.
 #
+
+def dft_freqs(N):
+    """
+    Return the `N` frequencies in cycles/sample used to generate
+    the columns of the DFT matrix.
+    """
+    pass # TODO
 
 def idft(X):
     """
@@ -162,6 +161,44 @@ def is_orthogonal(a, b):
 #
 # We already implemented `complex_sinusoids(N,freqs)` to always return unit vectors.
 # We need to determine which set of frequencies generate mutually orthogonal vectors.
+#
+# Recall (or see this [post](/posts/nyquist-frequency/)) that the samples of two sinusoids with the same initial phase will be exactly equal if the difference between their frequencies is an integer (when the units of frequency is cycles per sample).
+# Two vectors cannot be orthogonal if they contain the same entries so we can immediately limit our search to a range of `1` cycles per sample.
+# I'm not clever enough to derive the right set of frequencies from first principles so I'll just start with the first frequency in the range `[0, 1)` and do a brute force search for orthogonal frequencies.
+#
+
+def complex_sinusoid_inners(N, f1):
+    f2 = np.linspace(0, 1, N * N, endpoint=False)
+    a = complex_sinusoid(N, f1)
+    B = complex_sinusoids(N, f2)
+    return np.abs(inner(a, B))
+
+# The math needs to be independent of N so we might as
+# well stick with small vectors in the brute force search
+zero_test = complex_sinusoid_inners(8, 0)
+
+# lit skip
+
+plt.plot(np.linspace(0, 1, len(zero_test)), zero_test)
+plt.title('inner products of sinusoids ($f_1=0$)')
+plt.xlabel('$f_2$ (cycles/sample)')
+plt.ylabel('|inner product|')
+plt.savefig('zero-test.png')
+plt.close()
+
+# lit unskip
+# lit execute
+# lit text
+#
+# We can see that the inner product of the `0`-frequency sinusoid vector with itself (its length) is `1` as expected and it approaches `1` again as we approach its alias vector at frequency `1` cycles per sample.
+# We can also see it approaching `0` at regular intervals and we can get a clue for why by
+#
+
+# exp(2jπ0n) = exp(0) = 1 for all n
+assert np.allclose(1.0, complex_sinusoid(N, 0))
+
+# lit execute
+# lit text
 #
 # Footnotes
 # ---------
