@@ -162,7 +162,7 @@ def is_orthogonal(a, b):
 # We already implemented `complex_sinusoids(N,freqs)` to always return unit vectors.
 # We need to determine which set of frequencies generate mutually orthogonal vectors.
 #
-# Recall (or see this [post](/posts/nyquist-frequency/)) that the samples of two sinusoids with the same initial phase will be exactly equal if the difference between their frequencies is an integer (when the units of frequency is cycles per sample).
+# Recall (or see this [post](/posts/nyquist-frequency/)) that the samples of two sinusoids with the same initial phase will be exactly equal if the difference between their normalized frequencies (cycles per sample) is an integer.
 # Two vectors cannot be orthogonal if they contain the same entries so we can immediately limit our search to a range of `1` cycles per sample.
 # I'm not clever enough to derive the right set of frequencies from first principles so I'll just start with the first frequency in the range `[0, 1)` and do a brute force search for orthogonal frequencies.
 #
@@ -194,8 +194,7 @@ plt.close()
 # We can also see it approaching `0` at regular intervals and we can get a clue for why by
 #
 
-# exp(2jπ0n) = exp(0) = 1 for all n
-assert np.allclose(1+0j, complex_sinusoid(N, 0) * np.sqrt(N))
+assert np.allclose(1, complex_sinusoid(N, 0) * np.sqrt(N))
 
 # lit execute
 # lit text
