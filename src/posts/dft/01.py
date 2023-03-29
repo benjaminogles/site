@@ -31,7 +31,7 @@ def generate_complex_samples(N):
 
 # lit unskip
 
-N = 1024
+N = 128
 x = generate_complex_samples(N)
 
 # lit text
@@ -174,7 +174,7 @@ def complex_sinusoid_inners(N, f1):
     return np.abs(inner(a, B))
 
 # The math needs to be independent of N so we might as
-# well stick with small vectors in the brute force search
+# well stick to small N in this brute force search
 zero_test = complex_sinusoid_inners(8, 0)
 
 # lit skip
@@ -195,7 +195,7 @@ plt.close()
 #
 
 # exp(2jπ0n) = exp(0) = 1 for all n
-assert np.allclose(1.0, complex_sinusoid(N, 0))
+assert np.allclose(1+0j, complex_sinusoid(N, 0) * np.sqrt(N))
 
 # lit execute
 # lit text
