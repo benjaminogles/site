@@ -155,15 +155,15 @@ def inner(a, b):
 # `A*A = I`.
 #
 # In other words, we need the inverse of `A` to be its own conjugate transpose.
-# This means that the columns of `A` must be _orthonormal_ i.e. they must be unit vectors and their mutual inner products must be zero.
-# Then, every entry of `A*A` will be zero except for the diagonal which will contain ones (the magnitude squared of each column).
-# This of course describes the identity matrix, as desired.
+# Every entry of `A*A` is equal to the inner product of two column vectors in `A` (rows in `A*`).
+# To make the identity matrix, we need the inner products of distinct columns in `A` to be zero.
+# To state the property in formal terms, we need the columns of `A` to be _orthonormal_, making `A` a _unitary_ matrix. 
 #
 # To see why preserving inner products may be useful, rewrite the first step above but replace `A` with `A*`.
 #
 # `inner(x, y) = inner(A*x, A*y)`.
 #
-# You can prove this statement with the same steps as above since `A*A = AA*`.
+# You can prove this statement with the same steps as above since `A*A = AA* = I` when `A` is unitary.
 # Also, since `A*` is the inverse of `A`, we can substitute in our derived expression for the DFT of a vector.
 #
 # `inner(x, y) = inner(dft(x), dft(y))`
