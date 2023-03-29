@@ -127,7 +127,7 @@ def idft(X):
 # Perhaps the simplest way to think about deriving the DFT matrix is to lean on the algebra above and just think about choosing `dft_freqs(N)` so that `A` is invertible.
 #
 # We can't settle for just any invertible matrix though.
-# There is an important property need `A` must have to properly implement the DFT that constrains the nature of its inverse.
+# There is an important property `A` must have to properly implement the DFT and this property constrains the nature of `A`s inverse.
 # We need `A` to preserve inner products.
 #
 
