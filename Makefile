@@ -36,7 +36,7 @@ $(TARGET_DIR)/posts/nyquist-frequency/index.html: PAGE_DESCRIPTION = The limits 
 $(TARGET_DIR)/posts/nyquist-frequency/index.html: PAGE_METAS += fragments/highlightcss.html
 $(TARGET_DIR)/posts/nyquist-frequency/index.html: PAGE_FOOTERS += fragments/highlightjs.html
 
-$(TARGET_DIR)/posts/dft/index.html: PAGE_TITLE = DFT
+$(TARGET_DIR)/posts/dft/index.html: PAGE_TITLE = The Discrete Fourier Transform
 $(TARGET_DIR)/posts/dft/index.html: PAGE_DESCRIPTION = Derivation of the discrete Fourier transform (DFT)
 $(TARGET_DIR)/posts/dft/index.html: PAGE_METAS += fragments/highlightcss.html
 $(TARGET_DIR)/posts/dft/index.html: PAGE_FOOTERS += fragments/highlightjs.html
