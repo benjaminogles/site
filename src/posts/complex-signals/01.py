@@ -116,7 +116,7 @@ assert np.isclose(y, A * np.sin(θ))
 # -----------------------
 #
 # In many signal processing applications, we need to analyze signals of the form `x(t) = A(t) * cos(θ(t))` where `A(t)` and `θ(t)` are arbitrary real-valued functions of `t` (e.g. time).
-# It is immediately apparent that we can represent this signal with complex numbers.
+# It is immediately apparent that we can represent this signal with complex numbers because it has a magnitude and phase component.
 #
 
 rng = np.random.default_rng()
@@ -145,9 +145,9 @@ assert np.allclose(np.real(x_p_jy), x)
 # ----
 #
 # The program above showed that we can represent the signal `x(t) = A(t) * cos(θ(t))` with complex numbers if we can compute `y(t) = A(t) * sin(θ(t))` to form `x(t) + j * y(t)`.
-# This is easy enough if we know `A(t)` and `θ(t)` separately.
-# It is also possible to compute `y(t)` from `x(t)` alone as well.
-# But I will cover that in a separate post.
+# This is easy enough to do if we know the functions `A(t)` and `θ(t)` separately.
+# But it is also possible to compute `y(t)` from `x(t)` directly.
+# I plan on covering that in a different post.
 #
 # Why?
 # ----
@@ -189,34 +189,4 @@ assert np.allclose((z - np.conj(z)) / 2j,  y)
 # This shows that the signals `x(t) = A(t) * cos(θ(t))` and `y(t) = A(t) * sin(θ(t))` are composed of complex-valued signals in conjugate pairs.
 # Converting a real-valued signal to a complex-valued signal is just a matter of removing the redundant conjugate term.
 # When we add `x(t)` to `j * y(t)`, the redundant conjugate terms cancel out and we are left with `z(t) = A(t) * exp(j * θ(t))`.
-#
-# Generalizing
-# ------------
-#
-# So far, we have only discussed signals of the simple form `A(t) * cos(θ(t))`.
-# What if we are working with a sum of many such signals?
-# Luckily, a sum of these signals takes on the exact same form.
-#
-
-# Random B(t)
-B = rng.uniform(0, 1, size=10)
-# Random ϕ(t)
-ϕ = rng.uniform(-np.pi, np.pi, size=10)
-# Real-valued samples
-r = B * np.cos(ϕ)
-# Complex-valued sample
-w = B * np.exp(1j * ϕ)
-# Real-valued samples of the summed signal
-s = x + r
-# Unpack definitions of x and r in terms of w and z
-assert np.allclose(s, (z + np.conj(z) + w + np.conj(w)) / 2)
-# Rearrange; s is composed of complex numbers and their conjugates
-assert np.allclose(s, (z+w + np.conj(z+w)) / 2)
-# Write s in the form A(t) * cos(θ(t))
-assert np.allclose(s, np.abs(z+w) * np.cos(np.angle(z+w)))
-
-# lit execute
-# lit text
-#
-# So everything in this post also applies to arbitrary sums of signals in this form.
 #
