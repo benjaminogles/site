@@ -280,11 +280,11 @@ plt.close()
 #
 # Note: we plot the right half of the DFT vector on the left side of the plot since the column vectors in `A` with frequencies in the range `(0.5, 1)` also represent the frequencies in the range `(-0.5, 0)`.
 #
-# Filter Bank Interpretation
-# --------------------------
+# As the Eigen Basis of Circulant Matrices
+# ----------------------------------------
 #
-# Eigen Basis Interpretation
-# --------------------------
+# As a Bank of Bandpass FIR Filters
+# ---------------------------------
 #
 # Footnotes
 # ---------
