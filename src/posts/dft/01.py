@@ -283,6 +283,191 @@ plt.close()
 # As the Eigen Basis of Circulant Matrices
 # ----------------------------------------
 #
+# I learned about this topic from a great [article](https://arxiv.org/abs/1805.05533) written by Bassam Bamieh.
+# Look there for more detail.
+#
+# The matrix `A` shows up again in what initally seems to be an unrelated problem: simultaneously _diagonalizing_ the set of all _circulant_ matrices.
+# Each column of a circulant matrix contains the same entries, just circularly rotated to different positions.
+#
+
+import scipy.linalg
+C = scipy.linalg.circulant([0, 0, 1])
+
+# lit skip
+
+print("C =", np.array2string(C, prefix="C = ")[1:-1])
+
+# lit unskip
+# lit text
+#
+# `C` is a simple but important example of a circulant matrix.
+# It can obviously be extended to any size but the `3x3` example looks like this.
+#
+# lit execute
+#
+# `C` may also be called a permutation matrix because it simply permutes (in this case, rotates) the rows of `B` in the matrix product `CB`.
+#
+# In general, the effect of a circulant matrix is called _circular convolution_: computing the dot product of a signal vector with each rotation of a _kernel_ vector.
+# The kernel vector (one of the rotations in a circulant matrix) may be designed (and the signal vector may be augmented) to contain leading and/or trailing zeros to ignore rotations that wrap around the "edges" of the computation.
+# In this case, it may be more intuitive to think of the circulant matrix product as sliding a kernel vector along a signal vector and computing a dot product at each position.
+#
+# Diagonalizing the matrix `C` means finding matrices `P` and `D` such that
+#
+# `C = (P)D(P^-1)`
+#
+# where `D` is a diagonal matrix (zero everywhere except the main diagonal).
+# This problem can also be described as finding the eigenvalues and eigenvectors of `C`.
+# The eigenvalues of `C` are equal to the diagonal entries of `D` and the eigenvectors of `C` are equal to the columns of `P`.
+# To see why, consider an eigenvector `v` of `C`.
+# Then, by definition
+#
+# `Cv = λv`
+#
+# for some `λ`.
+# And if we can diagonalize `C`, then we have
+#
+# `(P)D(P^-1)v = λv`
+#
+# which we can rearrange to
+#
+# `D(P^-1)v = λ(P^-1)v`
+#
+# by left multiplying by `P^-1` on both sides.
+# So we see that if `λ` is an eigenvalue of `C`, then it must also be an eigenvalue of `D` with a different eigenvector `(P^-1)v`.
+# Since `D` is diagonal, its eigenvalues must be equal to its diagonal entries, which completes our proof that the eigenvalues of `C` reside in `D`.
+#
+# Diagonal matrices are useful because they reduce matrix multiplication to an independent scaling of rows or columns.
+# Any matrix product with a diagonalizable matrix `C` can be written in terms of a diagonal matrix product surrounded by _change of_basis_ operations.
+#
+# `Cx = (P)D(P^-1)x`
+#
+# By definition, if we can diagonalize `C`, then we have a set of eigenvectors that form the columns of an invertible matrix `P`, and equialently a _basis_ (in this case, called an _eigenbasis_) over the corresponding vector space.
+# This just gives a name to the already familiar idea that we can find unique weights to compute any vector as a linear combination of the eigenvectors of `C`.
+# Computing those weights for a particular vector `x` is as simple as computing `(P^-1)x` since
+#
+# `(P)(P^-1)x = x`
+#
+# can be seen as giving the linear combination of the columns of `P` with weights in `(P^-1)x`.
+# This is of course the same line of reasoning we used to derive the DFT and indeed the DFT is also a change of basis onto the basis formed by the columns of `A`.
+# Going back to the matrix product `Cx` where `C` is diagonalizable:
+#
+# `Cx = (P)D(P^-1)x`.
+#
+# From right to left, we can interpret this expression as a change of basis to the eigenbasis of `C`, followed by a scaling of the weights for `x` on that basis by the eigenvalues of `C`, followed by "undoing" the change of basis by computing the resulting linear combination of the columns of `P`.
+#
+# Simultaneously diagonalizing the entire set of circulant matrices means finding one set of eigenvectors `P` shared by all circulant matrices.
+# The result is one eigenbasis that reduces circular convolution to change of basis and scaling operations.
+# This result may not sound useful, trading one matrix multiplicaton for three others, but it ends up being _very_ useful for at least three reasons.
+#
+# 1. The shared eigenbasis allows us to directly compare the effects of circulant matrices i.e. we can directly compare the eigenvalues of circulant matrices
+# 2. For circulant matrices, we will see that `P` is equal to the DFT matrix `A` and we often want to compute the DFT of signal vectors anyway, so we get to reuse this computation for convolution
+# 3. The structure of `A` gives way to efficient algorithms for computing the change of basis operations (DFT and IDFT)
+#
+# After all this introduction, we still need to prove that all circulant matrices share the eigenvectors given by the columns of the DFT matrix `A`.
+# To start, let's try to find the eigenvalues of an `NxN` matrix `C` with the same form as the example above (the permutation matrix).
+# We need non-zero vectors `v` where
+#
+# `Cv = λv`
+#
+# for some scalar `λ`.
+# But we know that `C` is just going to rotate the entries of `v` by one position.
+# So we need
+#
+# `v[(n+1)%N] = λv[n]`, `0 <= n < N`.
+#
+# This implies a more general statement
+#
+# `v[(n+m)%N] = (λ^m)v[n]`, `0 <= n < N`.
+#
+# To get more insight into this constraint, we can consider the eigenvalues of `C` raised to an integer power (applied multiple times).
+# It is easy to show that
+#
+# `(C^m)v = (λ^m)v`
+#
+# by simply evaluating the matrix products with `v` (an eigenvector) from right to left.
+# The repeated applications of `C` mean more circular rotations of `v` which will repeat at an interval of `N` rotations.
+# We can see this clearly by rewriting our original constraint in terms of `v` as an eigenvector of `C^N` with eigenvalue `λ^N`.
+#
+# `v[(n+N)%N] = (λ^N)v[n]`, `0 <= n < N`
+#
+# which simplifies to
+#
+# `v[n] = (λ^N)v[n]`, `0 <= n < N`
+#
+# meaning that `λ^N = 1`.
+# There is a name for numbers like `λ` that reduce to `1` when raised to the `N`th power.
+# They are called `N`th roots of unity there happens to be `N` distinct complex `N`th roots of unity:
+#
+# `exp(j2πn/N)`, `0 <= n < N`.
+#
+# And Just like that, we have found expressions for the `N` distinct eigenvalues of `C` as the complex `N`th roots of unity.
+# And we already have an expression for the `m`th entry of each eigenvector `v` associated with a particular eigenvalue `λ`:
+#
+# `v[(n+m)%N] = (λ^m)v[n]`, `0 <= n < N`.
+#
+# We just fix `n` to zero and `v[n]` to `1`.
+#
+# `v[m%N] = λ^m`, `0 <= m < N`.
+#
+# So the entries of the `m`th eigenvector are given by
+#
+# `v_m[n] = exp(j2πmn/N)`, `0 <= m,n < N`.
+#
+# where we have used the `m`th complex `N`th root of unity as its corresponding `λ`.
+# This is the same expression used to generate the `m`th column of our DFT matrix.
+#
+# This proves that the eigenvectors of this particular `C` are equal to the columns of the DFT matrix but we still need to prove that this set of eigenvectors is shared by all circulant matrices.
+# For some other arbitrary `NxN` circulant matrix `B`, we want
+#
+# `B(v_m) = γ(v_m)`, `0 <= m < N`
+#
+# Multiply this expression by `C` on both sides to get
+#
+# `CB(v_m) = γC(v_m)`, `0 <= m < N`
+#
+# and if we assume (for now) that `C` and `B` commute, we have
+#
+# `BC(v_m) = γC(v_m)`, `0 <= m < N`
+#
+# showing that `C(v_m)` is an eigenvector of `B`.
+# But since `v_m` is an eigenvector of `C`, we know that `C(v_m)` is just a scalar multiple of `v_m`.
+# Eigenvectors are only unique up to scalar multiples so we have proved that `v_m` is an eigenvector of `B`, with some eigenvalue `γ`, if `C` and `B` commute.
+#
+# We can convince ourselves (see the previously mentioned article for a relatively simple proof)  that `C` must commute with any `NxN` circulant matrix `B` by visually examining the `3x3` case for a simple `B`.
+#
+
+B = scipy.linalg.circulant([1, 2, 3])
+CB = C @ B
+BC = B @ C
+
+# lit skip
+
+print("B  =", np.array2string(B, prefix="B = ")[1:-1])
+print()
+print("CB =", np.array2string(CB, prefix="B = ")[1:-1])
+print()
+print("BC =", np.array2string(BC, prefix="B = ")[1:-1])
+
+# lit unskip
+# lit text
+#
+# Recall that `CB` and `BC` are just circular rotations of the rows and columns in `B` and that each row and column in `B` contains the same entries, circularly rotated to different positions.
+# In this case, those entries are `[1, 2, 3]` which stand in as labels on the entries of a general circulant matrix `B`.
+#
+# lit execute
+#
+# Since `C` commutes with any `NxN` circulant matrix `B` <a id="footnote-3-ref" href="#footnote-3">[3]</a>, we have proved that every `B` shares the same set of eigenvectors given by the columns of the DFT matrix.
+# This means any convolution given by a circulant matrix `B` can be written as
+#
+# `Bx = ADA*x = idft((D)dft(x))`
+#
+# where
+#
+# `D = A*BA`
+#
+# by definition.
+# We can simplify the expression for `D` as the DFT of the kernel vector that generates `B`.
+#
 # As a Bank of Bandpass FIR Filters
 # ---------------------------------
 #
@@ -305,3 +490,22 @@ plt.close()
 # Although out of scope for this article, it is not too difficult to prove that every basis for an `N`-dimensional vector space has exactly `N` vectors.
 # This [video](https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces/null-column-space/v/proof-any-subspace-basis-has-same-number-of-elements) from Kahn Academy can guide you most of the way by proving that every basis of a subspace must contain the same number of vectors (you can then use the columns of the appropriately sized identity matrix as an example basis for any subspace to complete the proof).
 #
+# <p id="footnote-3">Footnote [3] (<a href="#footnote-3-ref">back</a>)</p>
+#
+# Actually all circulant matrices must mutually commute as we can show this statement's equivalence to the point of interest: that they share the same set of eigenvectors.
+# First, write the product of two arbitrary circulant matrices `CB` in terms of their diagonalized forms with this shared set of eigenvectors.
+#
+# `CB = (P)D(P^-1)(P)E(P^-1)`
+#
+# where `D` and `E` contain the eigenvalues of `C` and `B` respectively.
+# Now simplify the middle term.
+#
+# `CB = (P)DE(P^-1)`
+#
+# Diagonal matrices always commute, so we have
+#
+# `CB = (P)ED(P^-1)`
+#
+# which we can now rewrite in terms of `C` and `B` by bringing back that middle term equal to the identity matrix
+#
+# `CB = (P)E(P^-1)(P)D(P^-1) = BC`.
