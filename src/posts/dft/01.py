@@ -155,7 +155,7 @@ def inner(a, b):
 # To make this result equal the identity matrix, we need the inner products of distinct columns in `A` to be zero and the inner product of each column with itself to be one.
 # To state this property in formal terms, we need the columns of `A` to be _orthonormal_, making `A` a _unitary_ matrix. 
 #
-# Although it may be obvious at this point, we can quickly prove that the inner product of a vector is the same as the inner prodcut of its DFT.
+# Although it may be obvious at this point, we can quickly prove that the inner product of a vector is the same as the inner prodcut of its DFT if the DFT matrix is unitary.
 #
 # `inner(x, x) = inner(dft(x), dft(x))`
 #
@@ -175,7 +175,7 @@ def inner(a, b):
 #
 # `x*x = x*AA*x`.
 #
-# This is true since `AA* = A*A = I` when `A*` is the inverse of `A`.
+# This is true since `AA* = A*A = I` when `A*` is the inverse of `A` i.e. when `A` is unitary.
 # And with the inverse of `A` defined, we can now implement `dft(x)`.
 #
 
@@ -285,8 +285,7 @@ plt.close()
 #
 # The matrix `A` shows up again in what initally seems to be an unrelated problem: _simultaneously diagonalizing_ the set of all _circulant matrices_.
 #
-# Circulant Matrices
-# ******************
+# **Circulant Matrices**
 #
 # Circulant matrices are square matrices where each column is a distinct circular rotation of the first column.
 # The columns are ordered so that each column is only different from its neighbors by one circular shift.
@@ -332,8 +331,7 @@ print('aC =', a @ C)
 # Each position of the result will contain a weighted sum of the entries of `x` but with the weights centered at a different position in `x`.
 # The first column of the circulant matrix, and the vector `x` can be extended with trailing zeros to avoid the "edge effects" of circular convolution and instead implement _linear convolution_.
 #
-# Diagonalization
-# ***************
+# **Diagonalization**
 #
 # Diagonalizing the matrix `C` (or any other square matrix) means finding matrices `P` and `D` such that
 #
@@ -360,72 +358,71 @@ print('aC =', a @ C)
 #
 # Diagonal matrices are useful because they reduce matrix multiplication to an independent scaling of rows or columns.
 #
-# Diagonalization of `C`
-# **********************
+# **Diagonalization of `C`**
 #
 # We will now find the eigenvalues and eigenvectors of an `NxN` matrix `C` with the same form as the `3x3` version shown above (the permutation matrix).
-# We need `N` non-zero eigenvalues `λ` and eigenvectors `v` where
+# We need `N` non-zero eigenvalues `λ_k` and eigenvectors `v_k`:
 #
-# `Cv = λv`.
+# `C(v_k) = (λ_k)(v_k)`, `0 <= k < N`.
 #
-# We know that `C` is just going to rotate the entries of `v` one step.
-# To satisfy the above equation, we need successive entries of `v` to be related by `λ`.
+# We know that `C` is just going to rotate the entries of `v_k` one step.
+# To satisfy the above equation, we need successive entries of `v_k` to be related by `λ_k`.
 #
-# `v[(n+1)%N] = λv[n]`, `0 <= n < N`.
+# `v_k[(n+1)%N] = (λ_k)(v_k[n])`, `0 <= k,n < N`.
 #
-# We can generalize this to a statement relating entries in `v` separated by `m` steps:
+# We can generalize this to a statement relating entries in `v_k` separated by `m` steps:
 #
-# `v[(n+m)%N] = (λ^m)v[n]`, `0 <= n < N`.
+# `v_k[(n+m)%N] = ((λ_k)^m)(v_k[n])`, `0 <= k,n < N`.
 #
 # If `m = N`, this simplifies to
 #
-# `v[n] = (λ^N)v[n]`, `0 <= n < N`
+# `v_k[n] = ((λ_k)^N)(v_k[n])`, `0 <= n < N`
 #
-# meaning that `λ^N = 1`.
+# meaning that `(λ_k)^N = 1`.
 # There is a name for numbers that reduce to `1` when raised to the `N`th power.
 # They are called `N`th roots of unity and there are exactly `N` distinct complex `N`th roots of unity:
 #
-# `exp(j2πn/N)`, `0 <= n < N`.
+# `exp(j2πk/N)`, `0 <= k < N`.
 #
 # These are the `N` eigenvalues of `C`.
-# Now we can solve for the entries of `v` using the previous relationship:
+# Now we can solve for the entries of `v_k` using the previous relationship:
 #
-# `v[(n+m)%N] = (λ^m)v[n]`, `0 <= n < N`.
+# `v_k[(n+m)%N] = ((λ_k)^m)(v_k[n])`, `0 <= k,n < N`.
 #
-# The absolute scale of eigenvectors is arbitrary so we can assume `v[0]` is `1` and solve for the rest of the entries of `v` relative to `v[0]`.
+# The absolute scale of eigenvectors is arbitrary so we can assume `v_k[0]` is `1` and solve for the rest of the entries of `v_k` relative to `v_k[0]`.
 #
-# `v[m] = λ^m`, `0 <= m < N`.
+# `v_k[m] = (λ_k)^m`, `0 <= k,m < N`.
 #
 # So the entries of the `k`th eigenvector are given by
 #
 # `v_k[m] = exp(j2πkm/N)`, `0 <= k,m < N`.
 #
-# where we have paired the `k`th eigenvector with the `k`th complex `N`th root of unity as its eigenvalue `λ`.
 # This is the same expression used to generate the `k`th column of our DFT matrix.
 # So we have proven that the eigenvectors of `C` are equal to the columns of `A`.
 #
-# Simultaneous Diagonalization of Circulant Matrices
-# **************************************************
+# **Simultaneous Diagonalization of Circulant Matrices**
 #
-# We would
-# This proves that the eigenvectors of this particular `C` are equal to the columns of the DFT matrix but we still need to prove that this set of eigenvectors is shared by all circulant matrices.
-# For some other arbitrary `NxN` circulant matrix `B`, we want
+# Now we would like to prove that all circulant matrices share this same set of eigenvectors.
+# This is called simultaneous diagonalization.
+# For an arbitrary `NxN` circulant matrix `B` we need
 #
-# `B(v_m) = γ(v_m)`, `0 <= m < N`
+# `B(v_k) = (γ_k)(v_k)`, `0 <= k < N`
 #
+# for some set of eigenvalues `γ_k`.
 # Multiply this expression by `C` on both sides to get
 #
-# `CB(v_m) = γC(v_m)`, `0 <= m < N`
+# `CB(v_k) = (γ_k)C(v_k)`, `0 <= k < N`
 #
-# and if we assume (for now) that `C` and `B` commute, we have
+# and if we assume (for now) that `C` and `B` commute, then we have
 #
-# `BC(v_m) = γC(v_m)`, `0 <= m < N`
+# `BC(v_k) = (γ_k)C(v_k)`, `0 <= k < N`
 #
-# showing that `C(v_m)` is an eigenvector of `B`.
-# But since `v_m` is an eigenvector of `C`, we know that `C(v_m)` is just a scalar multiple of `v_m`.
-# Eigenvectors are only unique up to scalar multiples so we have proved that `v_m` is an eigenvector of `B`, with some eigenvalue `γ`, if `C` and `B` commute.
+# and because `v_k` is an eigenvector of `C`, we can simplify this to
 #
-# We can convince ourselves (see the previously mentioned article for a relatively simple proof)  that `C` must commute with any `NxN` circulant matrix `B` by visually examining the `3x3` case for a simple `B`.
+# `BC(v_k) = (γ_k)(λ_k)(v_k)`, `0 <= k < N`
+#
+# showing that `(λ_k)(v_k)`, and therefore `v_k` (the absolute scale of an eigenvector is irrelevant), is an eigenvector of `B`.
+# This proof relied on the fact that `C` commutes with any circulant matrix `B`, which we can prove now.
 #
 
 B = scipy.linalg.circulant([1, 2, 3])
@@ -448,17 +445,14 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 #
 # lit execute
 #
-# Since `C` commutes with any `NxN` circulant matrix `B` <a id="footnote-4-ref" href="#footnote-4">[3]</a>, we have proved that every `B` shares the same set of eigenvectors given by the columns of the DFT matrix.
+# Since `C` commutes with any `NxN` circulant matrix `B` <a id="footnote-4-ref" href="#footnote-4">[3]</a>, we have proven that every `B` shares the same set of eigenvectors given by the columns of the DFT matrix.
 # This means any convolution given by a circulant matrix `B` can be written as
 #
 # `Bx = ADA*x = idft((D)dft(x))`
 #
 # where
 #
-# `D = A*BA`
-#
-# by definition.
-# We can simplify the expression for `D` as the DFT of the kernel vector that generates `B`.
+# `D = A*BA`.
 #
 # Eigen Basis
 # ***********
