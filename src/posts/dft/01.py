@@ -85,7 +85,7 @@ def complex_sinusoids(N, freqs):
 
 # lit text
 #
-# Assume we can define the routine `dft(x)` to compute the weights of `x` as a linear combination of the columns of an `NxK` matrix `A` where each column contains `N` complex samples of a pure sinusoid (we will see later that `K` must equal `N`).
+# Assume we can define the routine `dft(x)` to compute the weights of `x` as a linear combination of the columns of an `NxK` matrix `Q` where each column contains `N` complex samples of a pure sinusoid (we will see later that `K` must equal `N`).
 # Then the inverse DFT (computing `x` from `dft(x)`), is trivially derived as simply computing that linear combination <a id="footnote-1-ref" href="#footnote-1">[1]</a>.
 #
 
@@ -101,8 +101,8 @@ def idft(X):
     Inverse DFT: given `X = dft(x)`, return `x`.
     """
     N = len(X)
-    A = complex_sinusoids(N, dft_freqs(N))
-    return np.matmul(A, X)
+    Q = complex_sinusoids(N, dft_freqs(N))
+    return np.matmul(Q, X)
 
 # lit text
 #
@@ -113,18 +113,18 @@ def idft(X):
 #
 # and expanding the definition of `idft(X)` gives
 #
-# `x = (A)dft(x)`.
+# `x = (Q)dft(x)`.
 #
-# Left multiplying by the inverse of `A` on both sides completes the derivation:
+# Left multiplying by the inverse of `Q` on both sides completes the derivation:
 #
-# `(A^-1)x = dft(x)`.
+# `(Q^-1)x = dft(x)`.
 #
-# Note that `(A^-1)` must be a left and right inverse of `A` (i.e. `A` must be invertible) because we need to left multiply the above equation by `A` to get back to the expression for `idft(x)`.
-# So we have our answer on why `K` must be equal to `N` <a id="footnote-2-ref" href="footnote-2">[2]</a>: `A` must be a square matrix to be invertible and it already has `N` rows corresponding to the `N` samples in `x`.
+# Note that `(Q^-1)` must be a left and right inverse of `Q` (i.e. `Q` must be invertible) because we need to left multiply the above equation by `Q` to get back to the expression for `idft(x)`.
+# So we have our answer on why `K` must be equal to `N` <a id="footnote-2-ref" href="footnote-2">[2]</a>: `Q` must be a square matrix to be invertible and it already has `N` rows corresponding to the `N` samples in `x`.
 #
-# To help us find the right `dft_freqs(N)`, we will constrain `A` to have one other important property.
+# To help us find the right `dft_freqs(N)`, we will constrain `Q` to have one other important property.
 # We want the DFT to be a _unitary transform_, meaning that the magnitudes of `x` and `X` are equal if `X` is the DFT of `x`.
-# To state this more generally, we want `A` to preserve inner products (the inner product of a vector with itself is equal to its magnitude squared).
+# To state this more generally, we want `Q` to preserve inner products (the inner product of a vector with itself is equal to its magnitude squared).
 #
 
 def inner(a, b):
@@ -135,25 +135,25 @@ def inner(a, b):
 #
 # So we need
 #
-# `inner(a, b) = inner(Aa, Ab)`.
+# `inner(a, b) = inner(Qa, Qb)`.
 #
 # Expanding the definition of `inner` gives
 #
-# `a*b = (Aa)*(Ab)`
+# `a*b = (Qa)*(Qb)`
 #
 # where `*` denotes the conjugate transpose operation and vectors are considered column vectors.
 # We can then use the fact that the conjugate transpose of a matrix product is equal to the flipped product of its member's conjugate transposes to write
 #
-# `a*b = a*A*Ab`.
+# `a*b = a*Q*Qb`.
 #
 # For this to be true, we need
 #
-# `A*A = I`.
+# `Q*Q = I`.
 #
-# In other words, we need the inverse of `A` to be equal to its own conjugate transpose.
-# Every entry of `A*A` is equal to the inner product of two column vectors in `A` (rows in `A*`).
-# To make this result equal the identity matrix, we need the inner products of distinct columns in `A` to be zero and the inner product of each column with itself to be one.
-# To state this property in formal terms, we need the columns of `A` to be _orthonormal_, making `A` a _unitary_ matrix. 
+# In other words, we need the inverse of `Q` to be equal to its own conjugate transpose.
+# Every entry of `Q*Q` is equal to the inner product of two column vectors in `Q` (rows in `Q*`).
+# To make this result equal the identity matrix, we need the inner products of distinct columns in `Q` to be zero and the inner product of each column with itself to be one.
+# To state this property in formal terms, we need the columns of `Q` to be _orthonormal_, making `Q` a _unitary_ matrix. 
 #
 # Although it may be obvious at this point, we can quickly prove that the magnitude of a vector is the same as the magnitude of its DFT if the DFT matrix is unitary.
 #
@@ -161,22 +161,22 @@ def inner(a, b):
 #
 # Expanding the definition of `dft(x)` gives
 #
-# `inner(x, x) = inner((A^-1)x, (A^-1)x)`
+# `inner(x, x) = inner((Q^-1)x, (Q^-1)x)`
 #
-# and we can replace `A^(-1)` with `A*` since `A` is unitary.
+# and we can replace `Q^(-1)` with `Q*` since `Q` is unitary.
 #
-# `inner(x, x) = inner(A*x, A*x)`.
+# `inner(x, x) = inner(Q*x, Q*x)`.
 #
 # Expanding the definition of `inner` gives
 #
-# `x*x = (A*x)*(A*x)`
+# `x*x = (Q*x)*(Q*x)`
 #
-# and we get a similar expression as we did before when working with `A` instead of `A*`
+# and we get a similar expression as we did before when working with `Q` instead of `Q*`
 #
-# `x*x = x*AA*x`.
+# `x*x = x*QQ*x`.
 #
-# This is true since `AA* = A*A = I` when `A*` is the inverse of `A` i.e. when `A` is unitary.
-# And with the inverse of `A` defined, we can now implement `dft(x)`.
+# This is true since `QQ* = Q*Q = I` when `Q*` is the inverse of `Q` i.e. when `Q` is unitary.
+# And with the inverse of `Q` defined, we can now implement `dft(x)`.
 #
 
 def dft(x):
@@ -185,8 +185,8 @@ def dft(x):
     of the columns in the DFT matrix.
     """
     N = len(x)
-    A = complex_sinusoids(N, dft_freqs(N))
-    return A.conj().T @ x
+    Q = complex_sinusoids(N, dft_freqs(N))
+    return Q.conj().T @ x
 
 # lit text
 #
@@ -246,9 +246,9 @@ def dft_freqs(N):
 #
 
 I = np.identity(N)
-A = complex_sinusoids(N, dft_freqs(N))
-assert np.allclose(I, A.conj().T @ A)
-assert np.allclose(I, A @ A.conj().T)
+Q = complex_sinusoids(N, dft_freqs(N))
+assert np.allclose(I, Q.conj().T @ Q)
+assert np.allclose(I, Q @ Q.conj().T)
 
 X = dft(x)
 assert np.isclose(inner(x, x), inner(X, X))
@@ -278,12 +278,12 @@ plt.close()
 # lit execute
 # lit text
 #
-# Note: we plot the right half of the DFT vector on the left side of the plot since the column vectors in `A` with frequencies in the range `(0.5, 1)` also represent the frequencies in the range `(-0.5, 0)`.
+# Note: we plot the right half of the DFT vector on the left side of the plot since the column vectors in `Q` with frequencies in the range `(0.5, 1)` also represent the frequencies in the range `(-0.5, 0)`.
 #
 # The DFT as the Eigen Vectors of Circulant Matrices <a id="footnote-3-ref" href="#footnote-3">[3]</a>
 # ----------------------------------------------------------------------------------------------------
 #
-# The matrix `A` shows up again in what initally seems to be an unrelated problem: _simultaneously diagonalizing_ the set of all _circulant matrices_.
+# The matrix `Q` shows up again in what initally seems to be an unrelated problem: _simultaneously diagonalizing_ the set of all _circulant matrices_.
 #
 # **Circulant Matrices**
 #
@@ -398,7 +398,7 @@ print('aC =', a @ C)
 # `v_k[m] = exp(j2πkm/N)`, `0 <= k,m < N`.
 #
 # This is the same expression used to generate the `k`th column of our DFT matrix.
-# So we have proven that the eigenvectors of `C` are equal to the columns of `A`.
+# So we have proven that the eigenvectors of `C` are equal to the columns of `Q`.
 #
 # **Simultaneous Diagonalization of all Circulant Matrices**
 #
@@ -451,31 +451,31 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 #
 # **Summary**
 #
-# We have proven that `NxN` circulant matrices share a set of eigenvectors equal to the columns of the `NxN` DFT matrix `A`.
-# This means that we can write any `NxN` circulant matrix `B` in terms of `A`
+# We have proven that `NxN` circulant matrices share a set of eigenvectors equal to the columns of the `NxN` DFT matrix `Q`.
+# This means that we can write any `NxN` circulant matrix `B` in terms of `Q`
 #
-# `B = ADA*`.
+# `B = QDQ*`.
 #
 # Consider the first column `b` of `B`.
-# In the above expression, it is computed as a linear combination of the columns of `A` given by the weights in the first column of `DA*`.
-# And the first column of `DA*` simply contains the diagonal entries of `D`.
-# To see why, recall that the first entry of every row in `A*` (conjugate of columns in `A`) is equal to
+# In the above expression, it is computed as a linear combination of the columns of `Q` given by the weights in the first column of `DQ*`.
+# And the first column of `DQ*` simply contains the diagonal entries of `D`.
+# To see why, recall that the first entry of every row in `Q*` (conjugate of columns in `Q`) is equal to
 #
 # `exp(-1j*k*0/N) = exp(0) = 1`, `0 <= k < N`.
 #
-# and `DA*` will scale each row in `A*` by the diagonal entries of `D`.
-# This means that the first column `b` of `B` is a linear combination of the columns of `A` given by the weights `d` on the diagonal of `D`:
+# and `DQ*` will scale each row in `Q*` by the diagonal entries of `D`.
+# This means that the first column `b` of `B` is a linear combination of the columns of `Q` given by the weights `d` on the diagonal of `D`:
 #
-# `b = Ad`.
+# `b = Qd`.
 #
 # Which means we can also write the digaonal entries of `D` in terms of `b`
 #
-# `d = A*b`.
+# `d = Q*b`.
 #
 # Which is all to say that the eigenvalues of `B` (the diagonal entries of `D`) are easily computed as the DFT of the first column in `B`.
 # This means that any product `Bx` can be written as
 #
-# `Bx = ADA*x = idft(dft(b)∘dft(x))`
+# `Bx = QDQ*x = idft(dft(b)∘dft(x))`
 #
 # where `b` is the first column of `B` and `∘` denotes element-wise multiplication.
 # In other words, the convolution implemented by the matrix multiplication `Bx` can also be implemented with element-wise multiplication and DFT operations.
@@ -488,7 +488,7 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 #
 # <p id="footnote-1">Footnote [1] (<a href="#footnote-1-ref">back</a>)</p>
 #
-# The routine `idft(X)` computes a linear combination of the columns of `A` given by the weights in `X` and is implemented as a matrix multiplication.
+# The routine `idft(X)` computes a linear combination of the columns of `Q` given by the weights in `X` and is implemented as a matrix multiplication.
 # If you're used to thinking of matrix multiplication results in an entry-by-entry way as row-column dot products, it is worth training your mind to also view the results in a column-by-column or row-by-row way as linear combinations of the matrix columns or rows depending on whether the matrix in question is on the left or right side of the expression.
 # The matrix or vector on the other side of the expression contains the weights of the combinations in its rows or columns depending on whether *it* appears on the left or right side of the expression.
 # Eli Bendersky has a helpful visualization of these operations on his site [here](https://eli.thegreenplace.net/2015/visualizing-matrix-multiplication-as-a-linear-combination/).
@@ -496,9 +496,9 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 #
 # <p id="footnote-2">Footnote [2] (<a href="#footnote-2-ref">back</a>)</p>
 #
-# As is often the case in linear algebra, there is more than one way to see that `A` must be an `NxN` matrix but they are all equivalent to asserting that `A` is an invertible matrix.
-# To restate the claim of the DFT, we claim that `idft(X)` can generate every possible `x` in our `N`-dimensional vector space by combining the columns of `A` with a unique weight vector `X`.
-# In linear algebra terms, we claim that the _column space_ of `A` is equivalent to our `N`-dimensional vector space, i.e. that the columns of `A` form a basis for the space.
+# As is often the case in linear algebra, there is more than one way to see that `Q` must be an `NxN` matrix but they are all equivalent to asserting that `Q` is an invertible matrix.
+# To restate the claim of the DFT, we claim that `idft(X)` can generate every possible `x` in our `N`-dimensional vector space by combining the columns of `Q` with a unique weight vector `X`.
+# In linear algebra terms, we claim that the _column space_ of `Q` is equivalent to our `N`-dimensional vector space, i.e. that the columns of `Q` form a basis for the space.
 # Although out of scope for this article, it is not too difficult to prove that every basis for an `N`-dimensional vector space has exactly `N` vectors.
 # This [video](https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces/null-column-space/v/proof-any-subspace-basis-has-same-number-of-elements) from Kahn Academy can guide you most of the way by proving that every basis of a subspace must contain the same number of vectors (you can then use the columns of the appropriately sized identity matrix as an example basis for any subspace to complete the proof).
 #
