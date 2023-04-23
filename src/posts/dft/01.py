@@ -459,9 +459,9 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 # Consider the first column `b` of `B`.
 # In the above expression, it is computed as a linear combination of the columns of `A` given by the weights in the first column of `DA*`.
 # And the first column of `DA*` simply contains the diagonal entries of `D`.
-# To see why, recall that the first entry of every row in `A*` (or column in `A`) is equal to
+# To see why, recall that the first entry of every row in `A*` (conjugate of columns in `A`) is equal to
 #
-# `exp(1j*k*0/N) = exp(0) = 1`, `0 <= k < N`.
+# `exp(-1j*k*0/N) = exp(0) = 1`, `0 <= k < N`.
 #
 # and `DA*` will scale each row in `A*` by the diagonal entries of `D`.
 # This means that the first column `b` of `B` is a linear combination of the columns of `A` given by the weights `d` on the diagonal of `D`:
