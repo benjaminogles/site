@@ -280,8 +280,8 @@ plt.close()
 #
 # Note: we plot the right half of the DFT vector on the left side of the plot since the column vectors in `A` with frequencies in the range `(0.5, 1)` also represent the frequencies in the range `(-0.5, 0)`.
 #
-# The DFT as an Eigen Basis <a id="footnote-3-ref" href="#footnote-3">[3]</a>
-# --------------------------------------------------------------------------
+# The DFT as the Eigen Vectors of Circulant Matrices <a id="footnote-3-ref" href="#footnote-3">[3]</a>
+# ----------------------------------------------------------------------------------------------------
 #
 # The matrix `A` shows up again in what initally seems to be an unrelated problem: _simultaneously diagonalizing_ the set of all _circulant matrices_.
 #
@@ -479,9 +479,6 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 #
 # where `b` is the first column of `B` and `∘` denotes element-wise multiplication.
 # In other words, the convolution implemented by the matrix multiplication `Bx` can also be implemented with element-wise multiplication and DFT operations.
-#
-# **Eigen Basis**
-#
 #
 # As a Bank of Bandpass FIR Filters
 # ---------------------------------
