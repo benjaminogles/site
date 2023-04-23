@@ -9,8 +9,8 @@
 # Matrix Derivation
 # -----------------
 #
-# Mathematically, a sequence of complex samples, such as the arbitrary and random one below, can be considered a _vector_.
-# This vector belongs to a _vector space_ that contains all such length-`N` vectors.
+# Mathematically, a sequence of complex samples, such as the random one below, can be considered a _vector_.
+# This vector belongs to a _vector space_ that contains all length-`N` complex vectors.
 #
 
 # lit skip
@@ -36,9 +36,9 @@ x = generate_complex_samples(N)
 
 # lit text
 #
-# The claim of the DFT is that we can construct this vector `x`, and any other such vector `x`, as a unique weighted sum (called a linear combination) of pure sinusoids.
+# The claim of the DFT is that we can construct this vector `x`, and any other vector in this vector space, as a unique weighted sum (called a linear combination) of pure sinusoids.
 # The weights assigned to each sinusoid give us an indication of the frequency content in `x`.
-# I wouldn't say this claim is obviously true, just by looking at our example `x`, so it is worthy of a thorough derivation.
+# I wouldn't say this claim is obviously true, just by looking at our example `x`, so it is worth a thorough derivation.
 #
 
 # lit skip
@@ -122,9 +122,9 @@ def idft(X):
 # Note that `(A^-1)` must be a left and right inverse of `A` (i.e. `A` must be invertible) because we need to left multiply the above equation by `A` to get back to the expression for `idft(x)`.
 # So we have our answer on why `K` must be equal to `N` <a id="footnote-2-ref" href="footnote-2">[2]</a>: `A` must be a square matrix to be invertible and it already has `N` rows corresponding to the `N` samples in `x`.
 #
-# To help us find the right `dft_freqs(N)` to construct the right invertible `A`, we will constrain `A` to have one other important property.
+# To help us find the right `dft_freqs(N)`, we will constrain `A` to have one other important property.
 # We want the DFT to be a _unitary transform_, meaning that the magnitudes of `x` and `X` are equal if `X` is the DFT of `x`.
-# To state this more generally, we will want `A` to preserve inner products (the inner product of a vector with itself is equal to its magnitude squared).
+# To state this more generally, we want `A` to preserve inner products (the inner product of a vector with itself is equal to its magnitude squared).
 #
 
 def inner(a, b):
@@ -155,7 +155,7 @@ def inner(a, b):
 # To make this result equal the identity matrix, we need the inner products of distinct columns in `A` to be zero and the inner product of each column with itself to be one.
 # To state this property in formal terms, we need the columns of `A` to be _orthonormal_, making `A` a _unitary_ matrix. 
 #
-# Although it may be obvious at this point, we can quickly prove that the inner product of a vector is the same as the inner prodcut of its DFT if the DFT matrix is unitary.
+# Although it may be obvious at this point, we can quickly prove that the magnitude of a vector is the same as the magnitude of its DFT if the DFT matrix is unitary.
 #
 # `inner(x, x) = inner(dft(x), dft(x))`
 #
@@ -197,8 +197,8 @@ def dft(x):
 # Recall (or see this [post](/posts/nyquist-frequency/)) that the samples of two sinusoids with the same initial phase will be exactly equal if the difference between their normalized frequencies (cycles per sample) is an integer.
 # Two vectors cannot be orthogonal if they contain the same entries so we can immediately limit our search for `N` frequencies to a range of `1` cycles per sample.
 #
-# The inner product of two vectors is defined as the sum of their point-wise product where the first vector is conjugated.
-# Let's look at the general expression for this point-wise product between two unit vectors containing complex samples of pure sinusoids where `f` and `g` are their two normalized frequencies in cycles per sample and `n` is the sample index.
+# The inner product of two vectors is defined as the sum of their element-wise product where the first vector is conjugated.
+# Let's look at the general expression for this element-wise product between two unit vectors containing complex samples of pure sinusoids where `f` and `g` are their two normalized frequencies in cycles per sample and `n` is the sample index.
 #
 # `(1/sqrt(N))exp(-j2πfn)(1/sqrt(N))exp(j2πgn)`,  `0 <= n < N`.
 #
@@ -210,13 +210,13 @@ def dft(x):
 #
 # `exp(j(θ-φ)n)`, `0 <= n < N`.
 #
-# The point-wise product terms just look like another pure sinusoid with angular frequency `θ-φ`.
-# We need these products to sum to zero whenever `θ` does not equal `φ`.
+# The element-wise product looks like another pure sinusoid with angular frequency `θ-φ`.
+# We need the samples of this sinusoid to sum to zero whenever `θ` does not equal `φ`.
 # For good measure, let's look at the real and imaginary components separately.
 #
 # `cos((θ-φ)n) + jsin((θ-φ)n)`, `0 <= n < N`.
 #
-# The sum of these point-wise product terms is a complex number with the sum of a cosine wave in the real part and the sum of a sine wave in the imaginary part.
+# The sum of these `N` products is a complex number with the sum of a cosine wave in the real part and the sum of a sine wave in the imaginary part.
 # This sum can only be zero when `N` samples completes an integer number of cycles of the wave with angular frequency `θ-φ`.
 # This is true when `N(θ-φ)` is an integer multiple of `2π` or, equivalently, when `N(g-f)` is an integer.
 #
@@ -289,7 +289,7 @@ plt.close()
 #
 # Circulant matrices are square matrices where each column is a distinct circular rotation of the first column.
 # The columns are ordered so that each column is only different from its neighbors by one circular shift.
-# The same type of pattern can be seen along the rows of a circulant matrix.
+# The same relationship holds for the rows of a circulant matrix.
 #
 
 import scipy.linalg
@@ -340,7 +340,7 @@ print('aC =', a @ C)
 # where `D` is a diagonal matrix (zero everywhere except the main diagonal).
 # This problem can also be described as finding the _eigenvalues_ (the diagonal entries of `D`) and _eigenvectors_ (columns of `P`) of `C`.
 # To see why, consider an eigenvector `v` of `C`.
-# Then, by definition
+# By definition, we have
 #
 # `Cv = λv`
 #
@@ -384,12 +384,12 @@ print('aC =', a @ C)
 #
 # `exp(j2πk/N)`, `0 <= k < N`.
 #
-# These are the `N` eigenvalues of `C`.
-# Now we can solve for the entries of `v_k` using the previous relationship:
+# These are necessarily equal to the `N` eigenvalues of `C`.
+# Now we can solve for the entries of `v_k` using the previously stated relationship:
 #
 # `v_k[(n+m)%N] = ((λ_k)^m)(v_k[n])`, `0 <= k,n < N`.
 #
-# The absolute scale of eigenvectors is arbitrary so we can assume `v_k[0]` is `1` and solve for the rest of the entries of `v_k` relative to `v_k[0]`.
+# The scale of eigenvectors is arbitrary so we can assume `v_k[0]` is `1` and solve for the rest of the entries of `v_k` relative to `v_k[0]`.
 #
 # `v_k[m] = (λ_k)^m`, `0 <= k,m < N`.
 #
@@ -400,7 +400,7 @@ print('aC =', a @ C)
 # This is the same expression used to generate the `k`th column of our DFT matrix.
 # So we have proven that the eigenvectors of `C` are equal to the columns of `A`.
 #
-# **Simultaneous Diagonalization of Circulant Matrices**
+# **Simultaneous Diagonalization of all Circulant Matrices**
 #
 # Now we would like to prove that all circulant matrices share this same set of eigenvectors.
 # This is called simultaneous diagonalization.
@@ -419,10 +419,14 @@ print('aC =', a @ C)
 #
 # and because `v_k` is an eigenvector of `C`, we can simplify this to
 #
-# `BC(v_k) = (γ_k)(λ_k)(v_k)`, `0 <= k < N`
+# `B(λ_k)(v_k) = (γ_k)(λ_k)(v_k)`, `0 <= k < N`
 #
-# showing that `(λ_k)(v_k)`, and therefore `v_k` (the absolute scale of an eigenvector is irrelevant), is an eigenvector of `B`.
-# This proof relied on the fact that `C` commutes with any circulant matrix `B`, which we can prove now.
+# showing that `(λ_k)(v_k)`, and therefore `v_k` (the scale of an eigenvector is irrelevant), is an eigenvector of `B`.
+#
+# ** `C` Commutes with all Circulant Matrices**
+#
+# Our approach to the simultaneous diagonalization of all circulant matrices relied on an assumption that `CB = BC` for any `NxN` circulant matrix `B`.
+# We can quickly convince ourselves of this fact by looking at a representative `3x3` example.
 #
 
 B = scipy.linalg.circulant([1, 2, 3])
@@ -439,65 +443,45 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 
 # lit unskip
 # lit text
-#
-# Recall that `CB` and `BC` are just circular rotations of the rows and columns in `B` and that each row and column in `B` contains the same entries, circularly rotated to different positions.
-# In this case, those entries are `[1, 2, 3]` which stand in as labels on the entries of a general circulant matrix `B`.
-#
 # lit execute
 #
-# Since `C` commutes with any `NxN` circulant matrix `B` <a id="footnote-4-ref" href="#footnote-4">[3]</a>, we have proven that every `B` shares the same set of eigenvectors given by the columns of the DFT matrix.
-# This means any convolution given by a circulant matrix `B` can be written as
+# Notice that the entries of a circulant matrix are constant along the diagonals.
+# For any circulant matrix, the number to the left of each entry will be the same as the number below it (wrapping around the ends on the first column and last row).
+# This means that rotating the rows of `B` upwards (the effect of `CB`) and rotating the columns of `B` rightwards (the effect of `BC`) will yield the same result.
 #
-# `Bx = ADA*x = idft((D)dft(x))`
+# **Summary**
 #
-# where
+# We have proven that `NxN` circulant matrices share a set of eigenvectors equal to the columns of the `NxN` DFT matrix `A`.
+# This means that we can write any `NxN` circulant matrix `B` in terms of `A`
 #
-# `D = A*BA`.
+# `B = ADA*`.
 #
-# Eigen Basis
-# ***********
+# Consider the first column `b` of `B`.
+# In the above expression, it is computed as a linear combination of the columns of `A` given by the weights in the first column of `DA*`.
+# And the first column of `DA*` simply contains the diagonal entries of `D`.
+# To see why, recall that the first entry of every row in `A*` (or column in `A`) is equal to
 #
-# The columns of an `NxN` invertible matrix form a _basis_ for an `N`-dimensional vector space.
-# This just gives a name to the concept that we covered when deriving the DFT matrix.
-# If
+# `exp(1j*k*0/N) = exp(0) = 1`, `0 <= k < N`.
 #
-# `x = Py`
+# and `DA*` will scale each row in `A*` by the diagonal entries of `D`.
+# This means that the first column `b` of `B` is a linear combination of the columns of `A` given by the weights `d` on the diagonal of `D`:
 #
-# constructs `x` as a linear combination of the columns in `P`, then
+# `b = Ad`.
 #
-# `(P^-1)x = y`
+# Which means we can also write the digaonal entries of `D` in terms of `b`
 #
-# computes the weights `y`.
-# This means that we can construct any `x` as a unique linear combination of the columns of `P` with the weights given by `(P^-1)x`.
-# Because `P` is made up of eigenvectors, the basis formed by its columns may be called an `eigenbasis`.
+# `d = A*b`.
 #
-# Any matrix product with a diagonalizable matrix `C` can be written in terms of a diagonal matrix product surrounded by _change of basis_ operations.
+# Which is all to say that the eigenvalues of `B` (the diagonal entries of `D`) are easily computed as the DFT of the first column in `B`.
+# This means that any product `Bx` can be written as
 #
-# `Cx = (P)D(P^-1)x`
+# `Bx = ADA*x = idft(dft(b)∘dft(x))`
 #
-# By definition, if we can diagonalize `C`, then we have a set of eigenvectors that form the columns of an invertible matrix `P`, and equialently a _basis_ (in this case, called an _eigenbasis_) over the corresponding vector space.
-# This just gives a name to the already familiar idea that we can find unique weights to compute any vector as a linear combination of the eigenvectors of `C`.
-# Computing those weights for a particular vector `x` is as simple as computing `(P^-1)x` since
+# where `b` is the first column of `B` and `∘` denotes element-wise multiplication.
+# In other words, the convolution implemented by the matrix multiplication `Bx` can also be implemented with element-wise multiplication and DFT operations.
 #
-# `(P)(P^-1)x = x`
+# **Eigen Basis**
 #
-# can be seen as giving the linear combination of the columns of `P` with weights in `(P^-1)x`.
-# This is of course the same line of reasoning we used to derive the DFT and indeed the DFT is also a change of basis onto the basis formed by the columns of `A`.
-# Going back to the matrix product `Cx` where `C` is diagonalizable:
-#
-# `Cx = (P)D(P^-1)x`.
-#
-# From right to left, we can interpret this expression as a change of basis to the eigenbasis of `C`, followed by a scaling of the weights for `x` on that basis by the eigenvalues of `C`, followed by "undoing" the change of basis by computing the resulting linear combination of the columns of `P`.
-#
-# Simultaneously diagonalizing the entire set of circulant matrices means finding one set of eigenvectors `P` shared by all circulant matrices.
-# The result is one eigenbasis that reduces circular convolution to change of basis and scaling operations.
-# This result may not sound useful, trading one matrix multiplicaton for three others, but it ends up being _very_ useful for at least three reasons.
-#
-# 1. The shared eigenbasis allows us to directly compare the effects of circulant matrices i.e. we can directly compare the eigenvalues of circulant matrices
-# 2. For circulant matrices, we will see that `P` is equal to the DFT matrix `A` and we often want to compute the DFT of signal vectors anyway, so we get to reuse this computation for convolution
-# 3. The structure of `A` gives way to efficient algorithms for computing the change of basis operations (DFT and IDFT)
-#
-# After all this introduction, we still need to prove that all circulant matrices share the eigenvectors given by the columns of the DFT matrix `A`.
 #
 # As a Bank of Bandpass FIR Filters
 # ---------------------------------
@@ -526,22 +510,3 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 # I learned about this topic from a great [article](https://arxiv.org/abs/1805.05533) written by Bassam Bamieh.
 # Look there for more detail.
 #
-# <p id="footnote-4">Footnote [4] (<a href="#footnote-4-ref">back</a>)</p>
-#
-# Actually all circulant matrices must mutually commute as we can show this statement's equivalence to the point of interest: that they share the same set of eigenvectors.
-# First, write the product of two arbitrary circulant matrices `CB` in terms of their diagonalized forms with this shared set of eigenvectors.
-#
-# `CB = (P)D(P^-1)(P)E(P^-1)`
-#
-# where `D` and `E` contain the eigenvalues of `C` and `B` respectively.
-# Now simplify the middle term.
-#
-# `CB = (P)DE(P^-1)`
-#
-# Diagonal matrices always commute, so we have
-#
-# `CB = (P)ED(P^-1)`
-#
-# which we can now rewrite in terms of `C` and `B` by bringing back that middle term equal to the identity matrix
-#
-# `CB = (P)E(P^-1)(P)D(P^-1) = BC`.
