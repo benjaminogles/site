@@ -200,21 +200,21 @@ def dft(x):
 # The inner product of two vectors is defined as the sum of their element-wise product where the first vector is conjugated.
 # Let's look at the general expression for this element-wise product between two unit vectors containing complex samples of pure sinusoids where `f` and `g` are their two normalized frequencies in cycles per sample and `n` is the sample index.
 #
-# `(1/sqrt(N))exp(-j2πfn)(1/sqrt(N))exp(j2πgn)`,  `0 <= n < N`.
+# `(1/sqrt(N))exp(-j2πfn)(1/sqrt(N))exp(j2πgn), 0 <= n < N`.
 #
 # To simplify this expression, let's ignore its magnitude and define the angular frequencies `φ = 2πf` and `θ = 2πg`.
 #
-# `exp(-jφn)exp(jθn)`,  `0 <= n < N`.
+# `exp(-jφn)exp(jθn), 0 <= n < N`.
 #
 # Since the two terms have the same base, we can sum their exponents:
 #
-# `exp(j(θ-φ)n)`, `0 <= n < N`.
+# `exp(j(θ-φ)n), 0 <= n < N`.
 #
 # The element-wise product looks like another pure sinusoid with angular frequency `θ-φ`.
 # We need the samples of this sinusoid to sum to zero whenever `θ` does not equal `φ`.
 # For good measure, let's look at the real and imaginary components separately.
 #
-# `cos((θ-φ)n) + jsin((θ-φ)n)`, `0 <= n < N`.
+# `cos((θ-φ)n) + jsin((θ-φ)n), 0 <= n < N`.
 #
 # The sum of these `N` products is a complex number with the sum of a cosine wave in the real part and the sum of a sine wave in the imaginary part.
 # This sum can only be zero when `N` samples completes an integer number of cycles of the wave with angular frequency `θ-φ`.
@@ -239,9 +239,9 @@ def dft_freqs(N):
 #
 # as the range of frequencies returned by `dft_freqs(N)` and
 #
-# `N(k/N-l/N) = k-l`, `k` and `l` integers
+# `N(k/N-l/N) = k-l`
 #
-# as the difference between each pair of frequencies multiplied by `N`.
+# where `k` and `l` are integers, as the difference between each pair of frequencies multiplied by `N`.
 # With `dft_freqs(N)` implemented, we can check the rest of our program.
 #
 
@@ -363,39 +363,39 @@ print('aC =', a @ C)
 # We will now find the eigenvalues and eigenvectors of an `NxN` matrix `C` with the same form as the `3x3` version shown above (the permutation matrix).
 # We need `N` non-zero eigenvalues `λ_k` and eigenvectors `v_k`:
 #
-# `C(v_k) = (λ_k)(v_k)`, `0 <= k < N`.
+# `C(v_k) = (λ_k)(v_k), 0 <= k < N`.
 #
 # We know that `C` is just going to rotate the entries of `v_k` one step.
 # To satisfy the above equation, we need successive entries of `v_k` to be related by `λ_k`.
 #
-# `v_k[(n+1)%N] = (λ_k)(v_k[n])`, `0 <= k,n < N`.
+# `v_k[(n+1)%N] = (λ_k)(v_k[n]), 0 <= k,n < N`.
 #
 # We can generalize this to a statement relating entries in `v_k` separated by `m` steps:
 #
-# `v_k[(n+m)%N] = ((λ_k)^m)(v_k[n])`, `0 <= k,n < N`.
+# `v_k[(n+m)%N] = ((λ_k)^m)(v_k[n]), 0 <= k,n < N`.
 #
 # If `m = N`, this simplifies to
 #
-# `v_k[n] = ((λ_k)^N)(v_k[n])`, `0 <= n < N`
+# `v_k[n] = ((λ_k)^N)(v_k[n]), 0 <= n < N`
 #
 # meaning that `(λ_k)^N = 1`.
 # There is a name for numbers that reduce to `1` when raised to the `N`th power.
 # They are called `N`th roots of unity and there are exactly `N` distinct complex `N`th roots of unity:
 #
-# `exp(j2πk/N)`, `0 <= k < N`.
+# `exp(j2πk/N), 0 <= k < N`.
 #
 # These are necessarily equal to the `N` eigenvalues of `C`.
 # Now we can solve for the entries of `v_k` using the previously stated relationship:
 #
-# `v_k[(n+m)%N] = ((λ_k)^m)(v_k[n])`, `0 <= k,n < N`.
+# `v_k[(n+m)%N] = ((λ_k)^m)(v_k[n]), 0 <= k,n < N`.
 #
 # The scale of eigenvectors is arbitrary so we can assume `v_k[0]` is `1` and solve for the rest of the entries of `v_k` relative to `v_k[0]`.
 #
-# `v_k[m] = (λ_k)^m`, `0 <= k,m < N`.
+# `v_k[m] = (λ_k)^m, 0 <= k,m < N`.
 #
 # So the entries of the `k`th eigenvector are given by
 #
-# `v_k[m] = exp(j2πkm/N)`, `0 <= k,m < N`.
+# `v_k[m] = exp(j2πkm/N), 0 <= k,m < N`.
 #
 # This is the same expression used to generate the `k`th column of our DFT matrix.
 # So we have proven that the eigenvectors of `C` are equal to the columns of `Q`.
@@ -406,20 +406,20 @@ print('aC =', a @ C)
 # This is called simultaneous diagonalization.
 # For an arbitrary `NxN` circulant matrix `B` we need
 #
-# `B(v_k) = (γ_k)(v_k)`, `0 <= k < N`
+# `B(v_k) = (γ_k)(v_k), 0 <= k < N`
 #
 # for some set of eigenvalues `γ_k`.
 # Multiply this expression by `C` on both sides to get
 #
-# `CB(v_k) = (γ_k)C(v_k)`, `0 <= k < N`
+# `CB(v_k) = (γ_k)C(v_k), 0 <= k < N`
 #
 # and if we assume (for now) that `C` and `B` commute, then we have
 #
-# `BC(v_k) = (γ_k)C(v_k)`, `0 <= k < N`
+# `BC(v_k) = (γ_k)C(v_k), 0 <= k < N`
 #
 # and because `v_k` is an eigenvector of `C`, we can simplify this to
 #
-# `B(λ_k)(v_k) = (γ_k)(λ_k)(v_k)`, `0 <= k < N`
+# `B(λ_k)(v_k) = (γ_k)(λ_k)(v_k), 0 <= k < N`
 #
 # showing that `(λ_k)(v_k)`, and therefore `v_k` (the scale of an eigenvector is irrelevant), is an eigenvector of `B`.
 #
@@ -461,7 +461,7 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 # And the first column of `DQ*` simply contains the diagonal entries of `D`.
 # To see why, recall that the first entry of every row in `Q*` (conjugate of columns in `Q`) is equal to
 #
-# `exp(-1j*k*0/N) = exp(0) = 1`, `0 <= k < N`.
+# `exp(-1j*k*0/N) = exp(0) = 1, 0 <= k < N`.
 #
 # and `DQ*` will scale each row in `Q*` by the diagonal entries of `D`.
 # This means that the first column `b` of `B` is a linear combination of the columns of `Q` given by the weights `d` on the diagonal of `D`:
