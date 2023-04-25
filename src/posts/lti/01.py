@@ -17,7 +17,7 @@ n = 9
 x = np.zeros(n)
 x[n//2] = 1
 idx = np.arange(-(n//2), n//2+1)
-plt.stem(idx, x, basefmt=' ')
+plt.stem(idx, x, basefmt=' ', use_line_collection=True)
 plt.xticks(idx)
 plt.ylim([-.1, 1.1])
 plt.title('unit impulse')
@@ -37,7 +37,7 @@ plt.close()
 
 h = np.zeros(n)
 h[n//2-1:n//2+2] = 1.0
-plt.stem(idx, np.convolve(x, h, mode='same'), basefmt=' ')
+plt.stem(idx, np.convolve(x, h, mode='same'), basefmt=' ', use_line_collection=True)
 plt.xticks(idx)
 plt.ylim([-.1, 1.1])
 plt.title('unit impulse response')
@@ -55,14 +55,14 @@ plt.close()
 # lit skip
 
 fig, axs = plt.subplots(4, 2, sharex=True, sharey=True)
-axs[0][0].stem(idx, x, basefmt=' ')
-axs[0][1].stem(idx, np.convolve(x, h, mode='same'), basefmt=' ')
-axs[1][0].stem(idx, -1 * np.roll(x, -1), basefmt=' ')
-axs[1][1].stem(idx, np.convolve(-1 * np.roll(x, -1), h, mode='same'), basefmt=' ')
-axs[2][0].stem(idx, 2 * np.roll(x, 1), basefmt=' ')
-axs[2][1].stem(idx, np.convolve(2 * np.roll(x, 1), h, mode='same'), basefmt=' ')
-axs[3][0].stem(idx, x + -1 * np.roll(x, -1) + 2 * np.roll(x, 1), basefmt=' ')
-axs[3][1].stem(idx, np.convolve(x + -1 * np.roll(x, -1) + 2 * np.roll(x, 1), h, mode='same'), basefmt=' ')
+axs[0][0].stem(idx, x, basefmt=' ', use_line_collection=True)
+axs[0][1].stem(idx, np.convolve(x, h, mode='same'), basefmt=' ', use_line_collection=True)
+axs[1][0].stem(idx, -1 * np.roll(x, -1), basefmt=' ', use_line_collection=True)
+axs[1][1].stem(idx, np.convolve(-1 * np.roll(x, -1), h, mode='same'), basefmt=' ', use_line_collection=True)
+axs[2][0].stem(idx, 2 * np.roll(x, 1), basefmt=' ', use_line_collection=True)
+axs[2][1].stem(idx, np.convolve(2 * np.roll(x, 1), h, mode='same'), basefmt=' ', use_line_collection=True)
+axs[3][0].stem(idx, x + -1 * np.roll(x, -1) + 2 * np.roll(x, 1), basefmt=' ', use_line_collection=True)
+axs[3][1].stem(idx, np.convolve(x + -1 * np.roll(x, -1) + 2 * np.roll(x, 1), h, mode='same'), basefmt=' ', use_line_collection=True)
 axs[0][0].set_title('input')
 axs[0][1].set_title('output')
 axs[0][0].set_xticks(idx)
@@ -111,10 +111,11 @@ def mean_filter(x, n):
 # The first column of a circulant matrix implementing an FIR LTI system is the system's impulse response, zero padded to prevent the computation from wrapping around at the edges (circular convolution).
 # So we can analyze an LTI system's frequency response by analyzing the DFT of its impulse response.
 #
+# lit skip
 
 H = np.fft.fft(np.ones(5)/5)
-plt.stem(np.fft.fftshift(np.fft.fftfreq(5)), np.fft.fftshift(np.abs(H)))
-plt.title('DFT of Mean Filter (Length=5)')
+plt.stem(np.fft.fftshift(np.fft.fftfreq(5)), np.fft.fftshift(np.abs(H)), basefmt=' ', use_line_collection=True)
+plt.title('Mean Filter Frequency Response (Length=5)')
 plt.ylabel('Magnitude')
 plt.xlabel('Frequency (cycles/sample)')
 plt.savefig('frequency-response.png')
