@@ -480,7 +480,8 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 # `Bx = QDQ*x = idft(dft(b)∘dft(x))`
 #
 # where `b` is the first column of `B` and `∘` denotes element-wise multiplication.
-# In other words, convolution with `b` can be implemented by matrix multiplication with `B` or by element-wise multiplication wth `dft(b)` through DFT operations.
+# This means that convolution with `b` has a simple interpretation in terms of frequency.
+# The entries of `dft(b)` simply scale and rotates the entries of `dft(x)`, e.g. selectively amplifying some frequencies and attenuating others.
 #
 # Footnotes
 # ---------

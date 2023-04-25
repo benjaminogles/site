@@ -41,3 +41,7 @@ $(TARGET_DIR)/posts/dft/index.html: PAGE_DESCRIPTION = Derivation of the discret
 $(TARGET_DIR)/posts/dft/index.html: PAGE_METAS += fragments/highlightcss.html
 $(TARGET_DIR)/posts/dft/index.html: PAGE_FOOTERS += fragments/highlightjs.html
 
+$(TARGET_DIR)/posts/lti/index.html: PAGE_TITLE = Linear Time-Invariant Systems
+$(TARGET_DIR)/posts/lti/index.html: PAGE_DESCRIPTION = Introduction to Linear and Time-Invariant (LTI) Systems
+$(TARGET_DIR)/posts/lti/index.html: PAGE_METAS += fragments/highlightcss.html
+$(TARGET_DIR)/posts/lti/index.html: PAGE_FOOTERS += fragments/highlightjs.html
