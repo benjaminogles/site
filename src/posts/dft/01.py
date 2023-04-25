@@ -4,10 +4,12 @@
 # Discrete Fourier Transform
 # ==========================
 #
-# In this post, I derive the Discrete Fourier Transform (DFT) as a matrix and then show a few other ways to interpret its meaning.
+# **Published: 2023/04/25**
 #
-# Matrix Derivation
-# -----------------
+# In this post, I derive the Discrete Fourier Transform (DFT) and show its relationship to convolution.
+#
+# Derivation
+# ----------
 #
 # Mathematically, a sequence of complex samples, such as the random one below, can be considered a _vector_.
 # This vector belongs to a _vector space_ that contains all length-`N` complex vectors.
@@ -280,8 +282,8 @@ plt.close()
 #
 # Note: we plot the right half of the DFT vector on the left side of the plot since the column vectors in `Q` with frequencies in the range `(0.5, 1)` also represent the frequencies in the range `(-0.5, 0)`.
 #
-# The DFT as the Eigen Vectors of Circulant Matrices <a id="footnote-3-ref" href="#footnote-3">[3]</a>
-# ----------------------------------------------------------------------------------------------------
+# Relationship to Convolution <a id="footnote-3-ref" href="#footnote-3">[3]</a>
+# -----------------------------------------------------------------------------
 #
 # The matrix `Q` shows up again in what initally seems to be an unrelated problem: _simultaneously diagonalizing_ the set of all _circulant matrices_.
 #
@@ -478,10 +480,7 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 # `Bx = QDQ*x = idft(dft(b)∘dft(x))`
 #
 # where `b` is the first column of `B` and `∘` denotes element-wise multiplication.
-# In other words, the convolution implemented by the matrix multiplication `Bx` can also be implemented with element-wise multiplication and DFT operations.
-#
-# As a Bank of Bandpass FIR Filters
-# ---------------------------------
+# In other words, convolution with `b` can be implemented by matrix multiplication with `B` or by element-wise multiplication wth `dft(b)` through DFT operations.
 #
 # Footnotes
 # ---------
