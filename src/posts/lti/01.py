@@ -4,6 +4,8 @@
 # Linear and Time-Invariant (LTI) Systems
 # =======================================
 #
+# **Published: 2023/04/25**
+#
 # A system is a process that produces an output signal from an input signal.
 # Perhaps the simplest example of an input signal, called an impulse, is shown below.
 # The only non-zero sample of an impulse occurs at time zero and has a value of one.
@@ -85,10 +87,10 @@ plt.close()
 #
 # Because every input signal can be constructed as a weighted sum of shifted impulses, the input/output behavior of an LTI system is completely characterized by its impulse response.
 # Every output sample is a weighted sum of a set of input samples with the weights given by the system's input response.
-# This is called convolution.
+# Computing a weighted sum with a sliding set of weights is called convolution.
 #
-# In general, the length of an LTI system impulse response may be infinite (IIR), which complicates digital implementation beyond basic convolution.
-# As such, many digital LTI systems are designed to have a finite impulse response (FIR) so they can be directly implemented as convolution with the designed impulse response.
+# In general, the length of an LTI system impulse response may be infinite (IIR), which makes digital implementation more complicated than basic convolution.
+# But many digital LTI systems can be designed to have a finite impulse response (FIR) so that they can be implemented directly as convolution with that response.
 #
 # An Example System
 # -----------------
@@ -107,14 +109,16 @@ def mean_filter(x, n):
 # lit text
 #
 # Another way of understanding this system is to analyze its input/output relationship in terms of frequency.
-# In another [post](/posts/dft/), I showed that the DFT of the first column in a circulant matrix gives the weights applied to each frequency component of an input vector to yield the DFT of the convolution result.
-# The first column of a circulant matrix implementing an FIR LTI system is the system's impulse response, zero padded to prevent the computation from wrapping around at the edges (circular convolution).
+# In another [post](/posts/dft/), I showed that an input signal `x` convolved with an impulse response `h` (first column in a circulant matrix) has a DFT equivalent to the element-wise multiplication of `dft(x)` and `dft(h)`.
 # So we can analyze an LTI system's frequency response by analyzing the DFT of its impulse response.
 #
+
+hlen = 5
+H = np.fft.fft(np.ones(hlen)/hlen)
+
 # lit skip
 
-H = np.fft.fft(np.ones(5)/5)
-plt.stem(np.fft.fftshift(np.fft.fftfreq(5)), np.fft.fftshift(np.abs(H)), basefmt=' ', use_line_collection=True)
+plt.stem(np.fft.fftshift(np.fft.fftfreq(hlen)), np.fft.fftshift(np.abs(H)), basefmt=' ', use_line_collection=True)
 plt.title('Mean Filter Frequency Response (Length=5)')
 plt.ylabel('Magnitude')
 plt.xlabel('Frequency (cycles/sample)')
@@ -122,5 +126,32 @@ plt.savefig('frequency-response.png')
 plt.close()
 
 # lit unskip
-# lit execute
 # lit text
+#
+# The mean filter's frequency response singles out a single entry in the DFT, corresponding to a frequency of zero cycles per sample.
+#
+# lit execute
+#
+# Note that keeping one non-zero entry in the input DFT is not the same as perfectly filtering for one frequency.
+# As discussed in the DFT post, power at any frequency that does not divide into an integer number of cycles over the length of the DFT will contribute some power to each entry of the result.
+# We can see this by zero-padding the impulse response and analyzing it with a longer DFT.
+# This does not change the behavior of the system at all but gives us better resolution in the frequency response.
+#
+
+H = np.fft.fft(np.ones(hlen)/hlen, n=hlen*10)
+
+# lit skip
+#
+plt.stem(np.fft.fftshift(np.fft.fftfreq(hlen*10)), np.fft.fftshift(np.abs(H)), basefmt=' ', use_line_collection=True)
+plt.title('Mean Filter Frequency Response (Length=5)')
+plt.ylabel('Magnitude')
+plt.xlabel('Frequency (cycles/sample)')
+plt.savefig('frequency-response-fine.png')
+plt.close()
+
+# lit unskip
+# lit text
+#
+# As expected, we see a peak at zero cycles per sample and minima at other frequencies that divide into an integer number of cycles over the length of the DFT.
+#
+# lit execute

@@ -480,8 +480,11 @@ print("BC =", np.array2string(BC, prefix=" "*4)[1:-1])
 # `Bx = QDQ*x = idft(dft(b)∘dft(x))`
 #
 # where `b` is the first column of `B` and `∘` denotes element-wise multiplication.
-# This means that convolution with `b` has a simple interpretation in terms of frequency.
-# The entries of `dft(b)` simply scale and rotates the entries of `dft(x)`, e.g. selectively amplifying some frequencies and attenuating others.
+# This means that the DFT of `Bx` is equal to
+#
+# `dft(b)∘dft(x)`
+#
+# and we can understand the effect of convlution with `b` on the frequency content of any input signal, simply by analyzing `dft(b)`.
 #
 # Footnotes
 # ---------
