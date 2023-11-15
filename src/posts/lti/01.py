@@ -109,8 +109,8 @@ def mean_filter(x, n):
 # lit text
 #
 # Another way of understanding this system is to analyze its input/output relationship in terms of frequency.
-# In another [post](/posts/dft/), I showed that an input signal `x` convolved with an impulse response `h` (first column in a circulant matrix) has a DFT equivalent to the element-wise multiplication of `dft(x)` and `dft(h)`.
-# So we can analyze an LTI system's frequency response by analyzing the DFT of its impulse response.
+# In another [post](/posts/dft/), I showed that the convolution of an input signal `x` with an impulse response `h` (first column in a circulant matrix) can be computed as the inverse DFT of the element-wise product of `dft(x) * dft(h)`.
+# This means that `dft(x) * dft(h)` is equal to the frequency spectrum of `x` convolved with `h` and `dft(h)` can be interpreted as the LTI system's frequency response.
 #
 
 hlen = 5
