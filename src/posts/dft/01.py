@@ -425,7 +425,7 @@ print('aC =', a @ C)
 #
 # showing that `(λ_k)(v_k)`, and therefore `v_k` (the scale of an eigenvector is irrelevant), is an eigenvector of `B`.
 #
-# ** `C` Commutes with all Circulant Matrices**
+# **C Commutes with all Circulant Matrices**
 #
 # Our approach to the simultaneous diagonalization of all circulant matrices relied on an assumption that `CB = BC` for any `NxN` circulant matrix `B`.
 # We can quickly convince ourselves of this fact by looking at a representative `3x3` example.
