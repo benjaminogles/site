@@ -52,7 +52,8 @@ plt.close()
 # lit execute
 # lit text
 #
-# If the system is linear and time-invariant, then it will produce weighted sums of shifted impulse responses from weighted sums of shifted impulse signals.
+# If the system is linear and time-invariant, then scaling or shifting this input signal will simply scale and shift the corresponding output.
+# Additionally, if the input to the system is a sum of scaled and shifted impulse signals, then the output of the system will be a sum of scaled and shifted impulse responses.
 #
 # lit skip
 
